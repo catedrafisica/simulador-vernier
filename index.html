@@ -20,12 +20,13 @@
     :root { --azul:#314986; --oscuro:#17243f; }
     * { box-sizing:border-box; }
     body { margin:0; padding:24px; font-family:Arial,sans-serif; background:#f4f6fa; color:#17243f; }
+    #particulas { position:fixed; z-index:0; inset:0; display:block; width:100%; height:100%; pointer-events:none; }
     .pantalla-carga { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#f4f6fa; transition:opacity .35s, visibility .35s; }
     .pantalla-carga.oculta { opacity:0; visibility:hidden; }
     .gif-qubit { width:140px; height:140px; object-fit:contain; }
     .spinner { width:38px; height:38px; border:4px solid #c9d2e4; border-top-color:var(--azul); border-radius:50%; animation:girar .8s linear infinite; }
     @keyframes girar { to { transform:rotate(360deg); } }
-    main { max-width:1000px; margin:auto; background:white; padding:24px; border-radius:14px; box-shadow:0 4px 18px #14204220; }
+    main { position:relative; z-index:1; max-width:1000px; margin:auto; background:white; padding:24px; border-radius:14px; box-shadow:0 4px 18px #14204220; }
     .encabezado { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
     .logo-qubit { display:block; width:56px; height:56px; flex:0 0 56px; object-fit:contain; }
     h1 { margin:0 0 8px; color:var(--azul); font-size:1.55rem; }
@@ -47,9 +48,10 @@
     .nota li+li { margin-top:4px; }
     .ecuacion { margin:12px 0 4px; text-align:center; font-size:1.15rem; }
     .variables { margin:4px 0 0; font-size:.95rem; }
-    footer { max-width:1000px; margin:16px auto 0; color:#536078; text-align:center; font-size:.85rem; line-height:1.6; }
+    footer { position:relative; z-index:1; max-width:1000px; margin:16px auto 0; color:#536078; text-align:center; font-size:.85rem; line-height:1.6; }
     footer p { margin:2px 0; }
-    footer a { color:var(--azul); }
+    .icono-version { color:var(--azul); }
+    footer a { color:#236943; text-decoration:none; }
     code { white-space:nowrap; }
     @media (max-width:600px) {
       body { padding:12px; }
@@ -64,6 +66,7 @@
   </style>
 </head>
 <body>
+<canvas id="particulas" aria-hidden="true"></canvas>
 <div class="pantalla-carga" id="pantallaCarga" role="status" aria-live="polite">
   <img class="gif-qubit" src="qubit.gif" alt="Qubit">
   <span class="spinner" aria-hidden="true"></span>
@@ -112,7 +115,7 @@
   </div>
 </main>
 <footer>
-  <p>Versión 1.0.0</p>
+  <p><span class="icono-version" aria-hidden="true">✳️</span> Versión 1.0.0</p>
   <p>© Copyright <strong>2026 Qubit Física</strong>. All Rights Reserved.</p>
   <p>Designed by <a href="https://github.com/qubitfisica">augusalterats</a> | <a href="https://qubitfisica.com.ar/LICENSE.md">MIT License</a></p>
 </footer>
@@ -275,6 +278,79 @@
   canvas.addEventListener('pointerleave', () => {
     if (punteroActivo === null) canvas.style.cursor = 'default';
   });
+  const particulasCanvas = document.querySelector('#particulas');
+  const particulasCtx = particulasCanvas.getContext('2d');
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let particulas = [], anchoFondo = 0, altoFondo = 0, ultimoFotograma = 0, fotogramaParticulas = 0;
+  function dibujarParticulas(delta = 0) {
+    particulasCtx.clearRect(0, 0, anchoFondo, altoFondo);
+    particulas.forEach(particula => {
+      if (!movimientoReducido.matches) {
+        particula.x += particula.vx * delta;
+        particula.y += particula.vy * delta;
+        if (particula.x < -5) particula.x = anchoFondo + 5;
+        if (particula.x > anchoFondo + 5) particula.x = -5;
+        if (particula.y < -5) particula.y = altoFondo + 5;
+        if (particula.y > altoFondo + 5) particula.y = -5;
+      }
+    });
+    for (let i = 0; i < particulas.length; i++) {
+      const a = particulas[i];
+      for (let j = i + 1; j < particulas.length; j++) {
+        const b = particulas[j];
+        const distancia = Math.hypot(a.x - b.x, a.y - b.y);
+        if (distancia < 115) {
+          particulasCtx.strokeStyle = `rgba(35, 105, 67, ${0.2 * (1 - distancia / 115)})`;
+          particulasCtx.lineWidth = 1;
+          particulasCtx.beginPath();
+          particulasCtx.moveTo(a.x, a.y);
+          particulasCtx.lineTo(b.x, b.y);
+          particulasCtx.stroke();
+        }
+      }
+      particulasCtx.beginPath();
+      particulasCtx.arc(a.x, a.y, a.radio, 0, Math.PI * 2);
+      particulasCtx.fillStyle = 'rgba(35, 105, 67, 0.62)';
+      particulasCtx.fill();
+    }
+  }
+  function animarParticulas(tiempo) {
+    fotogramaParticulas = 0;
+    const delta = ultimoFotograma ? Math.min((tiempo - ultimoFotograma) / 16.67, 2) : 1;
+    ultimoFotograma = tiempo;
+    dibujarParticulas(delta);
+    if (!movimientoReducido.matches && !document.hidden) {
+      fotogramaParticulas = requestAnimationFrame(animarParticulas);
+    }
+  }
+  function iniciarParticulas() {
+    if (fotogramaParticulas) cancelAnimationFrame(fotogramaParticulas);
+    const escala = Math.min(window.devicePixelRatio || 1, 2);
+    anchoFondo = window.innerWidth;
+    altoFondo = window.innerHeight;
+    particulasCanvas.width = Math.round(anchoFondo * escala);
+    particulasCanvas.height = Math.round(altoFondo * escala);
+    particulasCtx.setTransform(escala, 0, 0, escala, 0, 0);
+    const cantidad = Math.min(60, Math.max(22, Math.round(anchoFondo * altoFondo / 22000)));
+    particulas = Array.from({ length: cantidad }, () => ({
+      x: Math.random() * anchoFondo,
+      y: Math.random() * altoFondo,
+      vx: (Math.random() - 0.5) * 0.9,
+      vy: (Math.random() - 0.5) * 0.9,
+      radio: 1 + Math.random() * 1.2
+    }));
+    ultimoFotograma = 0;
+    dibujarParticulas();
+    if (!movimientoReducido.matches && !document.hidden) {
+      fotogramaParticulas = requestAnimationFrame(animarParticulas);
+    }
+  }
+  window.addEventListener('resize', iniciarParticulas);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !movimientoReducido.matches) iniciarParticulas();
+  });
+  movimientoReducido.addEventListener('change', iniciarParticulas);
+  iniciarParticulas();
   dibujar();
   window.addEventListener('load',()=>setTimeout(()=>{
     document.querySelector('#pantallaCarga').classList.add('oculta');
