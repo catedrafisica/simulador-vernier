@@ -71,12 +71,12 @@
     <img class="logo-qubit" src="logoQubit.svg" alt="Qubit">
     <h1>Simulador de Calibre Vernier - Prof. en Física Augusto Alterats</h1>
   </header>
-  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. <span id="precision">La precisión es p= <strong id="resolucion">0,1 mm</strong>.</span></p>
+  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. <span id="precision" hidden>La precisión es p= <strong id="resolucion">0,1 mm</strong>.</span></p>
   <fieldset class="opciones">
     <legend>Mostrar ayudas</legend>
-    <label><input id="mostrarPrecision" type="checkbox" checked aria-controls="precision"> Precisión</label>
-    <label><input id="mostrarResultado" type="checkbox" checked aria-controls="lectura"> Resultado de la medida</label>
-    <label><input id="mostrarCoincidencia" type="checkbox" checked aria-controls="vernier"> Número de coincidencia</label>
+    <label><input id="mostrarPrecision" type="checkbox" aria-controls="precision"> Precisión</label>
+    <label><input id="mostrarResultado" type="checkbox" aria-controls="lectura"> Resultado de la medida</label>
+    <label><input id="mostrarCoincidencia" type="checkbox" aria-controls="vernier"> Número de coincidencia</label>
   </fieldset>
   <div id="panel">
     <button id="nuevo">Nueva medición</button>
@@ -88,7 +88,7 @@
       <option value="15">15</option>
       <option value="20">20</option>
     </select>
-    <output id="lectura" aria-live="polite">L = 37,4 mm</output>
+    <output id="lectura" aria-live="polite" hidden>L = 37,4 mm</output>
   </div>
   <canvas id="vernier" width="950" height="390" aria-label="Regla Vernier interactiva"></canvas>
   <div class="nota">
