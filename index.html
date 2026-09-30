@@ -37,7 +37,7 @@
     input { width:190px; accent-color:var(--azul); }
     select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:white; color:var(--oscuro); font:inherit; }
     #lectura { margin-left:auto; font-size:1.15rem; font-weight:bold; color:var(--azul); }
-    canvas { width:100%; max-width:100%; height:auto; display:block; border:1px solid #c9d2e4; border-radius:10px; background:#fff; touch-action:none; cursor:ew-resize; }
+    canvas { width:100%; max-width:100%; height:auto; display:block; border:1px solid #c9d2e4; border-radius:10px; background:#fff; touch-action:none; cursor:default; }
     .nota { padding:12px; border-left:4px solid var(--azul); background:#edf2fd; border-radius:4px; }
     .nota ol { margin:8px 0 0; padding-left:20px; }
     .nota li+li { margin-top:4px; }
@@ -102,7 +102,8 @@
   const resolucion = document.querySelector('#resolucion');
   const pxPorMm = 6, x0 = 75, yRegla = 145, yNonio = 145;
   let divisiones = Number(divisionesInput.value);
-  let medida = Number(range.value) / divisiones, arrastrando = false;
+  let medida = Number(range.value) / divisiones;
+  let punteroActivo = null, desplazamientoArrastre = 0;
 
   const coma = n => {
     const decimales = divisiones === 10 ? 1 : divisiones === 15 ? 4 : 2;
@@ -159,14 +160,51 @@
     establecer(medida);
   });
   nuevo.addEventListener('click',()=>establecer(Math.floor(Math.random()*120*divisiones+1)/divisiones));
-  canvas.addEventListener('pointerdown',e=>{arrastrando=true; canvas.setPointerCapture(e.pointerId); mover(e);});
-  canvas.addEventListener('pointermove',e=>{if(arrastrando)mover(e);});
-  canvas.addEventListener('pointerup',()=>arrastrando=false);
-  canvas.addEventListener('pointercancel',()=>arrastrando=false);
-  function mover(e) {
-    const r=canvas.getBoundingClientRect();
-    establecer((e.clientX-r.left)*(canvas.width/r.width)/pxPorMm-x0/pxPorMm);
+  function puntoCanvas(e) {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left - canvas.clientLeft) * canvas.width / canvas.clientWidth,
+      y: (e.clientY - r.top - canvas.clientTop) * canvas.height / canvas.clientHeight
+    };
   }
+  function sobreNonio(punto) {
+    const inicio = x0 + medida * pxPorMm;
+    const fin = inicio + (divisiones - 1) * pxPorMm;
+    return punto.x >= inicio - 6 && punto.x <= fin + 6 &&
+      punto.y >= yNonio && punto.y <= yNonio + 90;
+  }
+  canvas.addEventListener('pointerdown', e => {
+    if (punteroActivo !== null || !e.isPrimary || e.button !== 0) return;
+    const punto = puntoCanvas(e);
+    if (!sobreNonio(punto)) return;
+    punteroActivo = e.pointerId;
+    // Conserva el punto de agarre para que el nonio no salte al tocarlo.
+    desplazamientoArrastre = punto.x - (x0 + medida * pxPorMm);
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = 'grabbing';
+  });
+  canvas.addEventListener('pointermove', e => {
+    const punto = puntoCanvas(e);
+    if (punteroActivo !== null) {
+      if (e.pointerId === punteroActivo) {
+        establecer((punto.x - desplazamientoArrastre - x0) / pxPorMm);
+      }
+      return;
+    }
+    canvas.style.cursor = sobreNonio(punto) ? 'grab' : 'default';
+  });
+  function terminarArrastre(e) {
+    if (e.pointerId !== punteroActivo) return;
+    punteroActivo = null;
+    if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+    canvas.style.cursor = 'default';
+  }
+  canvas.addEventListener('pointerup', terminarArrastre);
+  canvas.addEventListener('pointercancel', terminarArrastre);
+  canvas.addEventListener('lostpointercapture', terminarArrastre);
+  canvas.addEventListener('pointerleave', () => {
+    if (punteroActivo === null) canvas.style.cursor = 'default';
+  });
   dibujar();
   window.addEventListener('load',()=>setTimeout(()=>{
     document.querySelector('#pantallaCarga').classList.add('oculta');
