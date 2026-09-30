@@ -152,7 +152,7 @@
     for(let i=0;i<=divisiones;i++) {
       const x=xcero+i*pasoNonio*pxPorMm;
       const alto=i===0?72: i===divisiones?74:34;
-      const coincide=mostrarCoincidencia.checked && i===coincidencia;
+      const coincide=i===coincidencia;
       linea(x,yNonio,x,yNonio+alto,coincide?2.8:i===0?2:1.2,coincide?'#c2410c':'#263238');
       if(i%5===0||i===divisiones) texto(i,x,yNonio+85,12,'center','#263238');
     }
