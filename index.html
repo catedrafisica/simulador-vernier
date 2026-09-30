@@ -71,7 +71,7 @@
     <img class="logo-qubit" src="logoQubit.svg" alt="Qubit">
     <h1>Simulador de Calibre Vernier - Prof. en Física Augusto Alterats</h1>
   </header>
-  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. <span id="precision" hidden>La precisión es p= <strong id="resolucion">0,1 mm</strong>.</span></p>
+  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. En mm/cm, la regla tiene marcas cada 1 mm; en pulgadas, cada 1/16 in. <span id="precision" hidden>La precisión es p= <strong id="resolucion">0,1 mm</strong>.</span></p>
   <fieldset class="opciones">
     <legend>Mostrar ayudas</legend>
     <label><input id="mostrarPrecision" type="checkbox" aria-controls="precision"> Precisión</label>
@@ -88,15 +88,21 @@
       <option value="15">15</option>
       <option value="20">20</option>
     </select>
+    <label for="unidad">Unidad:</label>
+    <select id="unidad" aria-label="Unidad de la lectura">
+      <option value="mm" selected>mm</option>
+      <option value="cm">cm</option>
+      <option value="in">in</option>
+    </select>
     <output id="lectura" aria-live="polite" hidden>L = 37,4 mm</output>
   </div>
-  <canvas id="vernier" width="950" height="390" aria-label="Regla Vernier interactiva"></canvas>
+  <canvas id="vernier" width="1024" height="390" aria-label="Regla Vernier interactiva"></canvas>
   <div class="nota">
     <strong>Lectura:</strong>
     <ol>
-      <li>En la regla principal, lea los milímetros completos que quedan a la izquierda del cero del nonio.</li>
-      <li>Si el cero del nonio coincide exactamente con una marca de la regla principal, esa es la lectura; el nonio aporta 0 mm.</li>
-      <li>Si no coincide, busque la división del nonio que coincide con una marca principal. Cuente las divisiones desde el cero, multiplique ese número por la precisión del nonio y sume el resultado a los milímetros completos.</li>
+      <li>En la regla principal, lea el valor que queda a la izquierda del cero del nonio.</li>
+      <li>Si el cero del nonio coincide exactamente con una marca de la regla principal, esa es la lectura; el nonio aporta 0 de la unidad elegida.</li>
+      <li>Si no coincide, busque la división del nonio que coincide con una marca principal. Cuente las divisiones desde el cero, multiplique ese número por la precisión del nonio y sume el resultado a la lectura de la regla principal.</li>
     </ol>
     <p class="ecuacion"><strong>L = L′ + n · p</strong></p>
     <p class="variables">L: lectura total; L′: lectura de la regla principal; n: número de divisiones hasta la coincidencia; p: precisión del nonio.</p>
@@ -109,6 +115,7 @@
   const lectura = document.querySelector('#lectura');
   const nuevo = document.querySelector('#nuevo');
   const divisionesInput = document.querySelector('#divisiones');
+  const unidadInput = document.querySelector('#unidad');
   const resolucion = document.querySelector('#resolucion');
   const precision = document.querySelector('#precision');
   const mostrarPrecision = document.querySelector('#mostrarPrecision');
@@ -116,12 +123,27 @@
   const mostrarCoincidencia = document.querySelector('#mostrarCoincidencia');
   const pxPorMm = 6, x0 = 75, yRegla = 145, yNonio = 145;
   let divisiones = Number(divisionesInput.value);
-  let medida = Number(range.value) / divisiones;
+  let unidad = unidadInput.value;
+  let pasoReglaMm = unidad === 'in' ? 25.4 / 16 : 1;
+  let medida = Number(range.value) * pasoReglaMm / divisiones;
   let punteroActivo = null, desplazamientoArrastre = 0;
 
   const coma = n => {
-    const decimales = divisiones === 10 ? 1 : divisiones === 15 ? 4 : 2;
-    return n.toFixed(decimales).replace(/\.?0+$/, '').replace('.', ',');
+    if (unidad === 'in') {
+      const denominador = 16 * divisiones;
+      const numerador = Math.round(n * denominador / 25.4);
+      const entero = Math.floor(numerador / denominador);
+      const resto = numerador % denominador;
+      if (!resto) return String(entero);
+      const maxComun = (a, b) => b ? maxComun(b, a % b) : a;
+      const divisor = maxComun(resto, denominador);
+      const fraccion = `${resto / divisor}/${denominador / divisor}`;
+      return entero ? `${entero} ${fraccion}` : fraccion;
+    }
+    const decimalesMm = divisiones === 10 ? 1 : divisiones === 15 ? 4 : 2;
+    const decimales = unidad === 'cm' ? decimalesMm + 1 : decimalesMm;
+    return (n * (unidad === 'cm' ? 0.1 : 1))
+      .toFixed(decimales).replace(/\.?0+$/, '').replace('.', ',');
   };
   function linea(x1, y1, x2, y2, ancho=1, color='#17243f') {
     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineWidth=ancho; ctx.strokeStyle=color; ctx.stroke();
@@ -132,21 +154,32 @@
   function dibujar() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     // Regla principal sobre el fondo blanco del canvas.
-    linea(x0,yRegla,914,yRegla,3,'#17243f');
-    // Escala fija: cada marca equivale a 1 mm.
-    for (let mm=0; mm<=140; mm++) {
-      const x=x0+mm*pxPorMm;
-      if(x>920) break;
-      const alto= mm%10===0 ? 65 : mm%5===0 ? 47 : 29;
-      linea(x,yRegla,x,yRegla-alto,mm%10===0?2.3:1.25);
-      if(mm%10===0) texto(mm,x,yRegla-77,16);
+    linea(x0,yRegla,canvas.width-36,yRegla,3,'#17243f');
+    if (unidad === 'in') {
+      const mmPorDieciseisavo = 25.4 / 16;
+      for (let marca=0; ; marca++) {
+        const x=x0+marca*mmPorDieciseisavo*pxPorMm;
+        if(x>canvas.width-30) break;
+        const alto=marca%16===0?65:marca%8===0?50:marca%4===0?40:marca%2===0?33:25;
+        linea(x,yRegla,x,yRegla-alto,marca%16===0?2.3:1.25);
+        if(marca%16===0) texto(marca/16,x,yRegla-77,16);
+      }
+    } else {
+      // En mm y cm, cada marca equivale a 1 mm.
+      for (let mm=0; mm<=160; mm++) {
+        const x=x0+mm*pxPorMm;
+        if(x>canvas.width-30) break;
+        const alto= mm%10===0 ? 65 : mm%5===0 ? 47 : 29;
+        linea(x,yRegla,x,yRegla-alto,mm%10===0?2.3:1.25);
+        if(mm%10===0) texto(coma(mm),x,yRegla-77,16);
+      }
     }
-    texto('REGLA PRINCIPAL (mm)', 475,30,15,'center','#314986');
+    texto(`REGLA PRINCIPAL (${unidad})`, canvas.width/2,30,15,'center','#314986');
     // Carro: su cero corresponde a la medida elegida.
     const xcero=x0+medida*pxPorMm;
-    const coincidencia=Math.round((medida-Math.floor(medida))*divisiones)%divisiones;
-    const pasoNonio=(divisiones-1)/divisiones;
-    const largoNonio=(divisiones-1)*pxPorMm;
+    const coincidencia=Math.round((medida/pasoReglaMm-Math.floor(medida/pasoReglaMm))*divisiones)%divisiones;
+    const pasoNonio=(divisiones-1)/divisiones*pasoReglaMm;
+    const largoNonio=(divisiones-1)*pasoReglaMm*pxPorMm;
     // El nonio comienza pegado a la línea base de la escala principal.
     linea(xcero,yNonio+74,xcero+largoNonio,yNonio+74,1.5,'#7b8794');
     for(let i=0;i<=divisiones;i++) {
@@ -156,31 +189,39 @@
       linea(x,yNonio,x,yNonio+alto,coincide?2.8:i===0?2:1.2,coincide?'#c2410c':'#263238');
       if(i%5===0||i===divisiones) texto(i,x,yNonio+85,12,'center','#263238');
     }
-    texto(`NONIO: ${divisiones} divisiones`,xcero+largoNonio/2,yNonio+145,14,'center','#263238');
+    texto(`NONIO: ${divisiones} divisiones (p=${coma(1/divisiones)} ${unidad})`,xcero+largoNonio/2,yNonio+145,12,'center','#263238');
     const xCoincide=xcero+coincidencia*pasoNonio*pxPorMm;
     if (mostrarCoincidencia.checked) {
       texto(`Coincidencia n = ${coincidencia}`,xCoincide,yNonio+110,13,'center','#c2410c');
     }
     precision.hidden = !mostrarPrecision.checked;
     lectura.hidden = !mostrarResultado.checked;
-    lectura.textContent=`L = ${coma(medida)} mm`;
-    range.setAttribute('aria-valuetext',`${coma(medida)} mm`);
+    resolucion.textContent=`${coma(1/divisiones)} ${unidad}`;
+    lectura.textContent=`L = ${coma(medida)} ${unidad}`;
+    range.setAttribute('aria-valuetext',`${coma(medida)} ${unidad}`);
   }
   function establecer(valor) {
-    medida=Math.round(Math.max(0,Math.min(120,valor))*divisiones)/divisiones;
-    range.value=Math.round(medida*divisiones); dibujar();
+    const maximoPasos=Math.floor(120*divisiones/pasoReglaMm);
+    const pasos=Math.max(0,Math.min(maximoPasos,Math.round(valor*divisiones/pasoReglaMm)));
+    medida=pasos*pasoReglaMm/divisiones;
+    range.max=maximoPasos;
+    range.value=pasos;
+    dibujar();
   }
   [mostrarPrecision, mostrarResultado, mostrarCoincidencia].forEach(control => {
     control.addEventListener('change', dibujar);
   });
-  range.addEventListener('input',e=>establecer(Number(e.target.value)/divisiones));
+  range.addEventListener('input',e=>establecer(Number(e.target.value)*pasoReglaMm/divisiones));
   divisionesInput.addEventListener('change',e=>{
     divisiones=Number(e.target.value);
-    range.max=120*divisiones;
-    resolucion.textContent=`${coma(1/divisiones)} mm`;
     establecer(medida);
   });
-  nuevo.addEventListener('click',()=>establecer(Math.floor(Math.random()*120*divisiones+1)/divisiones));
+  unidadInput.addEventListener('change',e=>{
+    unidad=e.target.value;
+    pasoReglaMm=unidad==='in'?25.4/16:1;
+    establecer(medida);
+  });
+  nuevo.addEventListener('click',()=>establecer(Math.random()*120));
   function puntoCanvas(e) {
     const r = canvas.getBoundingClientRect();
     return {
@@ -190,7 +231,7 @@
   }
   function sobreNonio(punto) {
     const inicio = x0 + medida * pxPorMm;
-    const fin = inicio + (divisiones - 1) * pxPorMm;
+    const fin = inicio + (divisiones - 1) * pasoReglaMm * pxPorMm;
     return punto.x >= inicio - 6 && punto.x <= fin + 6 &&
       punto.y >= yNonio && punto.y <= yNonio + 90;
   }
