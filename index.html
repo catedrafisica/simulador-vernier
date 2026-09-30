@@ -47,6 +47,9 @@
     .nota li+li { margin-top:4px; }
     .ecuacion { margin:12px 0 4px; text-align:center; font-size:1.15rem; }
     .variables { margin:4px 0 0; font-size:.95rem; }
+    footer { max-width:1000px; margin:16px auto 0; color:#536078; text-align:center; font-size:.85rem; line-height:1.6; }
+    footer p { margin:2px 0; }
+    footer a { color:var(--azul); }
     code { white-space:nowrap; }
     @media (max-width:600px) {
       body { padding:12px; }
@@ -108,6 +111,11 @@
     <p class="variables">L: lectura total; L′: lectura de la regla principal; n: número de divisiones hasta la coincidencia; p: precisión del nonio; ΔL: error de la medida, tomado igual a p.</p>
   </div>
 </main>
+<footer>
+  <p>Versión 1.0.0</p>
+  <p>© Copyright <strong>2026 Qubit Física</strong>. All Rights Reserved.</p>
+  <p>Designed by <a href="https://github.com/qubitfisica">augusalterats</a> | <a href="https://qubitfisica.com.ar/LICENSE.md">MIT License</a></p>
+</footer>
 <script>
   const canvas = document.querySelector('#vernier');
   const ctx = canvas.getContext('2d');
