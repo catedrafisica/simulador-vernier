@@ -34,7 +34,11 @@
     button { border:0; padding:10px 15px; border-radius:7px; color:white; background:var(--azul); font-weight:bold; cursor:pointer; }
     button:hover { background:#213665; }
     label { font-weight:bold; }
-    input { width:190px; accent-color:var(--azul); }
+    input[type="range"] { width:190px; accent-color:var(--azul); }
+    input[type="checkbox"] { accent-color:var(--azul); }
+    .opciones { display:flex; flex-wrap:wrap; gap:12px 20px; margin:0 0 16px; padding:12px; border:1px solid #c9d2e4; border-radius:7px; }
+    .opciones legend { font-weight:bold; }
+    .opciones label { display:flex; align-items:center; gap:6px; cursor:pointer; }
     select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:white; color:var(--oscuro); font:inherit; }
     #lectura { margin-left:auto; font-size:1.15rem; font-weight:bold; color:var(--azul); }
     canvas { width:100%; max-width:100%; height:auto; display:block; border:1px solid #c9d2e4; border-radius:10px; background:#fff; touch-action:none; cursor:default; }
@@ -67,7 +71,13 @@
     <img class="logo-qubit" src="logoQubit.svg" alt="Qubit">
     <h1>Simulador de Calibre Vernier - Prof. en Física Augusto Alterats</h1>
   </header>
-  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. La precisión es <strong id="resolucion">0,1 mm</strong>.</p>
+  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. <span id="precision">La precisión es p= <strong id="resolucion">0,1 mm</strong>.</span></p>
+  <fieldset class="opciones">
+    <legend>Mostrar ayudas</legend>
+    <label><input id="mostrarPrecision" type="checkbox" checked aria-controls="precision"> Precisión</label>
+    <label><input id="mostrarResultado" type="checkbox" checked aria-controls="lectura"> Resultado de la medida</label>
+    <label><input id="mostrarCoincidencia" type="checkbox" checked aria-controls="vernier"> Número de coincidencia</label>
+  </fieldset>
   <div id="panel">
     <button id="nuevo">Nueva medición</button>
     <label for="posicion">Posición:</label>
@@ -78,7 +88,7 @@
       <option value="15">15</option>
       <option value="20">20</option>
     </select>
-    <output id="lectura" aria-live="polite">37,4 mm</output>
+    <output id="lectura" aria-live="polite">L = 37,4 mm</output>
   </div>
   <canvas id="vernier" width="950" height="390" aria-label="Regla Vernier interactiva"></canvas>
   <div class="nota">
@@ -86,7 +96,7 @@
     <ol>
       <li>En la regla principal, lea los milímetros completos que quedan a la izquierda del cero del nonio.</li>
       <li>Si el cero del nonio coincide exactamente con una marca de la regla principal, esa es la lectura; el nonio aporta 0 mm.</li>
-      <li>Si no coincide, busque la división del nonio que coincide con una marca principal. Cuente las divisiones desde el cero, multiplique ese número por la precisión indicada arriba y sume el resultado a los milímetros completos.</li>
+      <li>Si no coincide, busque la división del nonio que coincide con una marca principal. Cuente las divisiones desde el cero, multiplique ese número por la precisión del nonio y sume el resultado a los milímetros completos.</li>
     </ol>
     <p class="ecuacion"><strong>L = L′ + n · p</strong></p>
     <p class="variables">L: lectura total; L′: lectura de la regla principal; n: número de divisiones hasta la coincidencia; p: precisión del nonio.</p>
@@ -100,6 +110,10 @@
   const nuevo = document.querySelector('#nuevo');
   const divisionesInput = document.querySelector('#divisiones');
   const resolucion = document.querySelector('#resolucion');
+  const precision = document.querySelector('#precision');
+  const mostrarPrecision = document.querySelector('#mostrarPrecision');
+  const mostrarResultado = document.querySelector('#mostrarResultado');
+  const mostrarCoincidencia = document.querySelector('#mostrarCoincidencia');
   const pxPorMm = 6, x0 = 75, yRegla = 145, yNonio = 145;
   let divisiones = Number(divisionesInput.value);
   let medida = Number(range.value) / divisiones;
@@ -138,20 +152,27 @@
     for(let i=0;i<=divisiones;i++) {
       const x=xcero+i*pasoNonio*pxPorMm;
       const alto=i===0?72: i===divisiones?74:34;
-      const coincide=i===coincidencia;
+      const coincide=mostrarCoincidencia.checked && i===coincidencia;
       linea(x,yNonio,x,yNonio+alto,coincide?2.8:i===0?2:1.2,coincide?'#c2410c':'#263238');
       if(i%5===0||i===divisiones) texto(i,x,yNonio+85,12,'center','#263238');
     }
     texto(`NONIO: ${divisiones} divisiones`,xcero+largoNonio/2,yNonio+145,14,'center','#263238');
     const xCoincide=xcero+coincidencia*pasoNonio*pxPorMm;
-    texto(`Coincidencia: ${coincidencia}`,xCoincide,yNonio+110,13,'center','#c2410c');
-    lectura.textContent=`${coma(medida)} mm`;
+    if (mostrarCoincidencia.checked) {
+      texto(`Coincidencia n = ${coincidencia}`,xCoincide,yNonio+110,13,'center','#c2410c');
+    }
+    precision.hidden = !mostrarPrecision.checked;
+    lectura.hidden = !mostrarResultado.checked;
+    lectura.textContent=`L = ${coma(medida)} mm`;
     range.setAttribute('aria-valuetext',`${coma(medida)} mm`);
   }
   function establecer(valor) {
     medida=Math.round(Math.max(0,Math.min(120,valor))*divisiones)/divisiones;
     range.value=Math.round(medida*divisiones); dibujar();
   }
+  [mostrarPrecision, mostrarResultado, mostrarCoincidencia].forEach(control => {
+    control.addEventListener('change', dibujar);
+  });
   range.addEventListener('input',e=>establecer(Number(e.target.value)/divisiones));
   divisionesInput.addEventListener('change',e=>{
     divisiones=Number(e.target.value);
