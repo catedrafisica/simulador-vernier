@@ -12,10 +12,10 @@
     * { box-sizing:border-box; }
     body { margin:0; padding:0 12px 24px; font-family:Arial,sans-serif; background:#f4f6fa; color:var(--oscuro); }
     #particulas { position:fixed; z-index:0; inset:0; display:block; width:100%; height:100%; pointer-events:none; }
-    .barra-sitio { position:relative; z-index:1; }
+    .barra-sitio { position:relative; z-index:11; }
     .barra-sitio .container { max-width:1000px; }
     .navbar-brand img { width:38px; height:38px; object-fit:contain; }
-    .pantalla-carga { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#f4f6fa; transition:opacity .35s, visibility .35s; }
+    .pantalla-carga { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#f4f6fa; pointer-events:none; transition:opacity .35s, visibility .35s; }
     .pantalla-carga.oculta { opacity:0; visibility:hidden; }
     .gif-qubit { width:140px; height:140px; object-fit:contain; }
     .spinner { width:38px; height:38px; border:4px solid #c9d2e4; border-top-color:var(--azul); border-radius:50%; animation:girar .8s linear infinite; }
@@ -75,8 +75,13 @@
     <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt="">Qubit Física</a>
     <div class="navbar-nav flex-row flex-wrap column-gap-3">
       <a class="nav-link" href="index.html">Inicio</a>
-      <a class="nav-link" href="vernier.html">Vernier</a>
-      <a class="nav-link active" href="micrometro.html" aria-current="page">Micrómetro</a>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle active" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Unidad 1 Mediciones</button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="vernier.html">Calibre Vernier</a></li>
+          <li><a class="dropdown-item active" href="micrometro.html" aria-current="page">Micrómetro</a></li>
+        </ul>
+      </div>
     </div>
   </div>
 </nav>
@@ -271,6 +276,7 @@
   canvas.addEventListener('lostpointercapture',terminarArrastre);
   dibujar();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="particulas.js"></script>
 <script>
   window.addEventListener('load',()=>setTimeout(()=>{
