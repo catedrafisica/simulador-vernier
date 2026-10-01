@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador de Micrómetro con Nonio</title>
+  <meta name="description" content="Simulador interactivo de micrómetro con nonio para practicar lecturas en milímetros.">
+  <link rel="icon" type="image/svg+xml" href="icoQubit.svg">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --azul:#314986; --oscuro:#17243f; --verde:#236943; --naranja:#c2410c; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 12px 24px; font-family:Arial,sans-serif; background:#f4f6fa; color:var(--oscuro); }
+    #particulas { position:fixed; z-index:0; inset:0; display:block; width:100%; height:100%; pointer-events:none; }
+    .barra-sitio { position:relative; z-index:1; }
+    .barra-sitio .container { max-width:1000px; }
+    .navbar-brand img { width:38px; height:38px; object-fit:contain; }
+    .pantalla-carga { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#f4f6fa; transition:opacity .35s, visibility .35s; }
+    .pantalla-carga.oculta { opacity:0; visibility:hidden; }
+    .gif-qubit { width:140px; height:140px; object-fit:contain; }
+    .spinner { width:38px; height:38px; border:4px solid #c9d2e4; border-top-color:var(--azul); border-radius:50%; animation:girar .8s linear infinite; }
+    @keyframes girar { to { transform:rotate(360deg); } }
+    main { position:relative; z-index:1; max-width:1000px; margin:24px auto 0; background:#fff; padding:24px; border-radius:12px; box-shadow:0 4px 18px #14204220; }
+    .encabezado { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
+    .logo-qubit { display:block; width:56px; height:56px; flex:0 0 56px; object-fit:contain; }
+    h1 { margin:0; color:var(--azul); font-size:1.55rem; }
+    p { margin:8px 0 18px; line-height:1.45; }
+    fieldset { display:flex; flex-wrap:wrap; gap:12px 20px; margin:0 0 16px; padding:12px; border:1px solid #c9d2e4; border-radius:7px; }
+    legend, label { font-weight:bold; }
+    fieldset label { display:flex; align-items:center; gap:6px; cursor:pointer; }
+    #panel { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:16px; }
+    button { border:0; padding:10px 15px; border-radius:6px; color:#fff; background:var(--azul); font-weight:bold; cursor:pointer; }
+    button:hover { background:#213665; }
+    select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:#fff; color:var(--oscuro); font:inherit; }
+    input[type="range"] { width:min(220px, 48vw); accent-color:var(--azul); }
+    input[type="checkbox"] { accent-color:var(--azul); }
+    #lectura { margin-left:auto; color:var(--azul); font-size:1.1rem; font-weight:bold; }
+    canvas { display:block; width:100%; height:auto; border:1px solid #c9d2e4; border-radius:8px; background:#fff; touch-action:none; cursor:default; }
+    .componentes { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin-top:12px; background:#d7deea; border:1px solid #d7deea; border-radius:6px; overflow:hidden; }
+    .componente { padding:10px 12px; background:#f8f9fc; }
+    .componente span { display:block; margin-bottom:4px; color:#536078; font-size:.85rem; }
+    .componente strong { color:var(--azul); }
+    .nota { margin-top:16px; padding:12px; border-left:4px solid var(--verde); background:#edf5f0; border-radius:4px; }
+    .nota ol { margin:8px 0 0; padding-left:20px; }
+    .nota li+li { margin-top:4px; }
+    .ecuacion { margin:12px 0 4px; text-align:center; font-size:1.15rem; }
+    .variables { margin:4px 0 0; font-size:.95rem; }
+    footer { position:relative; z-index:1; max-width:1000px; margin:14px auto 0; color:#536078; text-align:center; font-size:.85rem; line-height:1.6; }
+    footer p { margin:2px 0; }
+    footer a { color:var(--verde); text-decoration:none; }
+    @media (max-width:650px) {
+      body { padding:0 12px 16px; }
+      main { margin-top:16px; padding:16px; }
+      .logo-qubit { width:46px; height:46px; flex-basis:46px; }
+      h1 { font-size:1.25rem; }
+      .componentes { grid-template-columns:1fr; }
+      #lectura { width:100%; margin-left:0; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { scroll-behavior:auto !important; }
+      .pantalla-carga { transition:none; }
+      .spinner { animation:none; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="particulas" aria-hidden="true"></canvas>
+<div class="pantalla-carga" id="pantallaCarga" role="status" aria-live="polite">
+  <img class="gif-qubit" src="qubit.gif" alt="Qubit">
+  <span class="spinner" aria-hidden="true"></span>
+  <span>Cargando simulador micrometro...</span>
+</div>
+<nav class="navbar navbar-expand-md bg-white border-bottom barra-sitio" aria-label="Navegación principal">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt="">Qubit Física</a>
+    <div class="navbar-nav flex-row flex-wrap column-gap-3">
+      <a class="nav-link" href="index.html">Inicio</a>
+      <a class="nav-link" href="vernier.html">Vernier</a>
+      <a class="nav-link active" href="micrometro.html" aria-current="page">Micrómetro</a>
+    </div>
+  </div>
+</nav>
+<main inert>
+  <header class="encabezado">
+    <img class="logo-qubit" src="logoQubit.svg" alt="Qubit">
+    <h1>Simulador de Calibre Vernier - Prof. en Física Augusto Alterats</h1>
+  </header>
+  <p>Arrastre el tambor o use el deslizador para cambiar la abertura. La lectura suma la escala del manguito, el tambor y la coincidencia del nonio.</p>
+  <fieldset>
+    <legend>Mostrar ayudas</legend>
+    <label><input id="mostrarPrecision" type="checkbox" checked> Precisión</label>
+    <label><input id="mostrarResultado" type="checkbox" checked> Resultado</label>
+    <label><input id="mostrarCoincidencia" type="checkbox" checked> Coincidencia del nonio</label>
+  </fieldset>
+  <div id="panel">
+    <button class="btn btn-primary" id="nuevo" type="button">Nueva medición</button>
+    <label for="posicion">Abertura:</label>
+    <input id="posicion" type="range" min="0" max="25000" step="1" value="12734">
+    <label for="paso">Paso del tornillo:</label>
+    <select class="form-select w-auto" id="paso"><option value="0.5" selected>0,5 mm</option><option value="1">1 mm</option></select>
+    <label for="divisionesTambor">Tambor:</label>
+    <select class="form-select w-auto" id="divisionesTambor"><option value="50" selected>50 divisiones</option><option value="100">100 divisiones</option></select>
+    <label for="divisionesNonio">Nonio:</label>
+    <select class="form-select w-auto" id="divisionesNonio"><option value="10" selected>10 divisiones</option><option value="20">20 divisiones</option></select>
+    <output id="lectura" aria-live="polite"></output>
+  </div>
+  <canvas id="micrometro" width="1024" height="390" aria-label="Micrómetro con escalas del manguito, tambor y nonio"></canvas>
+  <div class="componentes" aria-live="polite">
+    <div class="componente"><span>Manguito</span><strong id="lecturaManguito">0 mm</strong></div>
+    <div class="componente"><span>Tambor</span><strong id="lecturaTambor">0 mm</strong></div>
+    <div class="componente"><span>Nonio</span><strong id="lecturaNonio">0 mm</strong></div>
+  </div>
+  <div class="nota">
+    <strong>Lectura:</strong>
+    <ol>
+      <li>Lea en el manguito la última marca visible antes del borde del tambor.</li>
+      <li>En la línea de referencia, lea la división del tambor alineada con ella.</li>
+      <li>Busque qué división del nonio coincide con una del tambor y sume su aporte.</li>
+    </ol>
+    <p class="ecuacion"><strong>L = L<sub>m</sub> + L<sub>t</sub> + n · p</strong></p>
+    <p class="variables">L: lectura total; L<sub>m</sub>: manguito; L<sub>t</sub>: tambor; n: división coincidente del nonio; p: precisión del nonio, calculada como paso / divisiones del tambor / divisiones del nonio.</p>
+  </div>
+</main>
+<footer>
+  <p><span class="icono-version">✳️</span> Versión 1.0.1</p>
+  <p>© Copyright <strong>2026 Qubit Física</strong>. Todos los derechos reservados.</p>
+  <p>Diseñado por <a href="https://github.com/qubitfisica">augusalterats</a> | <a href="https://qubitfisica.com.ar/LICENSE.md">Licencia MIT</a></p>
+</footer>
+<script>
+  const canvas = document.querySelector('#micrometro');
+  const ctx = canvas.getContext('2d');
+  const range = document.querySelector('#posicion');
+  const lectura = document.querySelector('#lectura');
+  const pasoInput = document.querySelector('#paso');
+  const divisionesTamborInput = document.querySelector('#divisionesTambor');
+  const divisionesNonioInput = document.querySelector('#divisionesNonio');
+  const mostrarPrecision = document.querySelector('#mostrarPrecision');
+  const mostrarResultado = document.querySelector('#mostrarResultado');
+  const mostrarCoincidencia = document.querySelector('#mostrarCoincidencia');
+  const x0 = 120, pxPorMm = 19, yReferencia = 184;
+  let paso = Number(pasoInput.value);
+  let divisionesTambor = Number(divisionesTamborInput.value);
+  let divisionesNonio = Number(divisionesNonioInput.value);
+  let medida = 12.734;
+  let punteroActivo = null, desplazamientoArrastre = 0;
+  const coma = (numero, decimales=4) => numero.toFixed(decimales).replace(/\.?0+$/, '').replace('.', ',');
+  const precisionMm = () => paso / divisionesTambor / divisionesNonio;
+  function decimalesNecesarios() {
+    const precision=precisionMm();
+    for(let decimales=0;decimales<=6;decimales++) {
+      if(Math.abs(precision*10**decimales-Math.round(precision*10**decimales))<1e-8) return Math.max(1,decimales);
+    }
+    return 6;
+  }
+  const unidadesPaso = () => Math.round(0.5 / precisionMm());
+  const totalUnidades = () => Math.round(medida / precisionMm());
+  function linea(x1,y1,x2,y2,ancho=1,color='#17243f') {
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineWidth=ancho; ctx.strokeStyle=color; ctx.stroke();
+  }
+  function texto(contenido,x,y,tam=13,alinear='center',color='#17243f') {
+    ctx.font=`${tam}px Arial`; ctx.textAlign=alinear; ctx.fillStyle=color; ctx.fillText(contenido,x,y);
+  }
+  function dibujar() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const xBorde=x0+medida*pxPorMm;
+    const metal=ctx.createLinearGradient(0,110,0,274);
+    metal.addColorStop(0,'#dce3ed'); metal.addColorStop(.48,'#f9fbfd'); metal.addColorStop(1,'#c7d1df');
+    ctx.fillStyle=metal; ctx.fillRect(72,135,760,112);
+    ctx.strokeStyle='#75849a'; ctx.lineWidth=1; ctx.strokeRect(72,135,760,112);
+    texto('MANGUITO · escala fija',390,117,13,'center','#314986');
+    linea(90,yReferencia,Math.min(xBorde,822),yReferencia,2,'#314986');
+    for(let marca=0;marca<=50;marca++) {
+      const mm=marca*0.5, x=x0+mm*pxPorMm;
+      if(x>xBorde-3 || x>818) break;
+      const mayor=marca%10===0, medio=marca%2===0;
+      const alto=mayor?32:medio?23:15;
+      linea(x,yReferencia,x,yReferencia-alto,mayor?1.8:1.1,'#17243f');
+      if(mayor) texto(String(mm),x,yReferencia-alto-8,12);
+    }
+    // Tambor móvil: sus marcas rodean el eje de referencia.
+    ctx.fillStyle='#aab8ca'; ctx.fillRect(xBorde,143,Math.max(12,920-xBorde),125);
+    ctx.fillStyle='#cbd5e1'; ctx.fillRect(xBorde,148,Math.max(8,920-xBorde),108);
+    ctx.strokeStyle='#68788f'; ctx.lineWidth=1.5; ctx.strokeRect(xBorde,143,Math.max(12,920-xBorde),125);
+    linea(xBorde,yReferencia,xBorde+50,yReferencia,2,'#314986');
+    const unidades=totalUnidades();
+    const marcaManguito=Math.floor(unidades/unidadesPaso());
+    const resto=unidades-marcaManguito*unidadesPaso();
+    const indiceTambor=Math.floor(resto/divisionesNonio);
+    const coincidencia=resto%divisionesNonio;
+    const pasoMarca=Math.max(3,96/divisionesTambor);
+    for(let i=-18;i<=18;i++) {
+      const indice=(indiceTambor+i+divisionesTambor)%divisionesTambor;
+      const y=yReferencia+i*pasoMarca;
+      if(y<146||y>264) continue;
+      const largo=indice%10===0?34:indice%5===0?25:16;
+      const coincide=i===0;
+      linea(xBorde+4,y,xBorde+4+largo,y,coincide?2.7:1.1,coincide?'#c2410c':'#263238');
+      if(indice%10===0) texto(String(indice),xBorde+47,y+4,10,'left','#263238');
+    }
+    texto('TAMBOR',xBorde+68,161,11,'left','#314986');
+    // Escala auxiliar esquemática del nonio; la coincidencia seleccionada se resalta.
+    const nonioY=311, nonioX=120, nonioGap=38;
+    texto(`NONIO · ${divisionesNonio} divisiones`,nonioX,292,13,'left','#314986');
+    linea(nonioX,nonioY,nonioX+(divisionesNonio-1)*nonioGap,nonioY,1.5,'#7b8794');
+    for(let i=0;i<divisionesNonio;i++) {
+      const x=nonioX+i*nonioGap, esCoincidencia=i===coincidencia;
+      linea(x,nonioY,x,nonioY+(esCoincidencia?30:17),esCoincidencia?2.6:1.1,esCoincidencia?'#c2410c':'#263238');
+      if(i%5===0||i===divisionesNonio-1) texto(String(i),x,nonioY+44,11,'center',esCoincidencia?'#c2410c':'#263238');
+    }
+    if(mostrarCoincidencia.checked) texto(`Coincidencia n = ${coincidencia}`,nonioX+(divisionesNonio-1)*nonioGap+100,nonioY+18,13,'left','#c2410c');
+    const lecturaManguito=marcaManguito*0.5;
+    const lecturaTambor=indiceTambor*paso/divisionesTambor;
+    const lecturaNonio=coincidencia*precisionMm();
+    const decimales=decimalesNecesarios();
+    document.querySelector('#lecturaManguito').textContent=`${coma(lecturaManguito,1)} mm`;
+    document.querySelector('#lecturaTambor').textContent=`${coma(lecturaTambor,decimales)} mm`;
+    document.querySelector('#lecturaNonio').textContent=`${coma(lecturaNonio,decimales)} mm`;
+    lectura.textContent=`${mostrarResultado.checked?'L = '+coma(medida,decimales)+' mm':''}${mostrarPrecision.checked?(mostrarResultado.checked?' · ':'')+'p = '+coma(precisionMm(),decimales)+' mm':''}`;
+    range.setAttribute('aria-valuetext',`${coma(medida,decimales)} mm`);
+  }
+  function establecer(valor) {
+    const maximo=25;
+    const pasos=Math.max(0,Math.min(Math.round(maximo/precisionMm()),Math.round(valor/precisionMm())));
+    medida=pasos*precisionMm();
+    range.max=String(Math.round(maximo/precisionMm()));
+    range.value=String(pasos);
+    dibujar();
+  }
+  [mostrarPrecision,mostrarResultado,mostrarCoincidencia].forEach(control=>control.addEventListener('change',dibujar));
+  range.addEventListener('input',e=>establecer(Number(e.target.value)*precisionMm()));
+  [pasoInput,divisionesTamborInput,divisionesNonioInput].forEach(control=>control.addEventListener('change',()=>{
+    paso=Number(pasoInput.value);
+    divisionesTambor=Number(divisionesTamborInput.value);
+    divisionesNonio=Number(divisionesNonioInput.value);
+    establecer(medida);
+  }));
+  document.querySelector('#nuevo').addEventListener('click',()=>establecer(Math.random()*25));
+  function puntoCanvas(e) {
+    const rect=canvas.getBoundingClientRect();
+    return {x:(e.clientX-rect.left)*canvas.width/rect.width,y:(e.clientY-rect.top)*canvas.height/rect.height};
+  }
+  function sobreTambor(punto) {
+    const xBorde=x0+medida*pxPorMm;
+    return punto.x>=xBorde&&punto.x<=920&&punto.y>=140&&punto.y<=270;
+  }
+  canvas.addEventListener('pointerdown',e=>{
+    if(punteroActivo!==null||!e.isPrimary||e.button!==0) return;
+    const punto=puntoCanvas(e);
+    if(!sobreTambor(punto)) return;
+    punteroActivo=e.pointerId;
+    desplazamientoArrastre=punto.x-(x0+medida*pxPorMm);
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor='grabbing';
+  });
+  canvas.addEventListener('pointermove',e=>{
+    const punto=puntoCanvas(e);
+    if(punteroActivo!==null) {
+      if(e.pointerId===punteroActivo) establecer((punto.x-desplazamientoArrastre-x0)/pxPorMm);
+      return;
+    }
+    canvas.style.cursor=sobreTambor(punto)?'grab':'default';
+  });
+  function terminarArrastre(e) {
+    if(e.pointerId!==punteroActivo) return;
+    punteroActivo=null;
+    if(canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+    canvas.style.cursor='default';
+  }
+  canvas.addEventListener('pointerup',terminarArrastre);
+  canvas.addEventListener('pointercancel',terminarArrastre);
+  canvas.addEventListener('lostpointercapture',terminarArrastre);
+  dibujar();
+</script>
+<script src="particulas.js"></script>
+<script>
+  window.addEventListener('load',()=>setTimeout(()=>{
+    document.querySelector('#pantallaCarga').classList.add('oculta');
+    document.querySelector('main').removeAttribute('inert');
+  },2000));
+</script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador de Calibre Vernier</title>
+  <meta name="description" content="Simulador interactivo de calibre Vernier para practicar mediciones y la lectura del nonio en Física.">
+  <link rel="canonical" href="https://catedrafisica.github.io/simulador-vernier/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:title" content="Simulador de Calibre Vernier">
+  <meta property="og:description" content="Practicá mediciones y la lectura del nonio con este simulador interactivo de Física.">
+  <meta property="og:url" content="https://catedrafisica.github.io/simulador-vernier/">
+  <meta property="og:image" content="https://catedrafisica.github.io/simulador-vernier/qubit.gif">
+  <meta property="og:image:alt" content="Qubit, mascota del simulador de Física">
+  <!-- Iframely requiere revisar y aprobar el sitio para habilitar su inserción. -->
+  <link rel="iframely" type="text/html" href="https://catedrafisica.github.io/simulador-vernier/" media="height: 850">
+  <link rel="icon" type="image/svg+xml" href="icoQubit.svg">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --azul:#314986; --oscuro:#17243f; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 12px 24px; font-family:Arial,sans-serif; background:#f4f6fa; color:#17243f; }
+    #particulas { position:fixed; z-index:0; inset:0; display:block; width:100%; height:100%; pointer-events:none; }
+    .pantalla-carga { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#f4f6fa; transition:opacity .35s, visibility .35s; }
+    .pantalla-carga.oculta { opacity:0; visibility:hidden; }
+    .gif-qubit { width:140px; height:140px; object-fit:contain; }
+    .spinner { width:38px; height:38px; border:4px solid #c9d2e4; border-top-color:var(--azul); border-radius:50%; animation:girar .8s linear infinite; }
+    @keyframes girar { to { transform:rotate(360deg); } }
+    main { position:relative; z-index:1; max-width:1000px; margin:24px auto 0; background:white; padding:24px; border-radius:14px; box-shadow:0 4px 18px #14204220; }
+    .barra-sitio { position:relative; z-index:1; }
+    .barra-sitio .container { max-width:1000px; }
+    .navbar-brand img { width:38px; height:38px; object-fit:contain; }
+    .encabezado { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
+    .logo-qubit { display:block; width:56px; height:56px; flex:0 0 56px; object-fit:contain; }
+    h1 { margin:0 0 8px; color:var(--azul); font-size:1.55rem; }
+    p { margin:7px 0 18px; line-height:1.4; }
+    #panel { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+    button { border:0; padding:10px 15px; border-radius:7px; color:white; background:var(--azul); font-weight:bold; cursor:pointer; }
+    button:hover { background:#213665; }
+    label { font-weight:bold; }
+    input[type="range"] { width:190px; accent-color:var(--azul); }
+    input[type="checkbox"] { accent-color:var(--azul); }
+    .opciones { display:flex; flex-wrap:wrap; gap:12px 20px; margin:0 0 16px; padding:12px; border:1px solid #c9d2e4; border-radius:7px; }
+    .opciones legend { font-weight:bold; }
+    .opciones label { display:flex; align-items:center; gap:6px; cursor:pointer; }
+    select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:white; color:var(--oscuro); font:inherit; }
+    #lectura { margin-left:auto; font-size:1.15rem; font-weight:bold; color:var(--azul); }
+    canvas { width:100%; max-width:100%; height:auto; display:block; border:1px solid #c9d2e4; border-radius:10px; background:#fff; touch-action:none; cursor:default; }
+    .nota { padding:12px; border-left:4px solid var(--azul); background:#edf2fd; border-radius:4px; }
+    .nota ol { margin:8px 0 0; padding-left:20px; }
+    .nota li+li { margin-top:4px; }
+    .ecuacion { margin:12px 0 4px; text-align:center; font-size:1.15rem; }
+    .variables { margin:4px 0 0; font-size:.95rem; }
+    footer { position:relative; z-index:1; max-width:1000px; margin:16px auto 0; color:#536078; text-align:center; font-size:.85rem; line-height:1.6; }
+    footer p { margin:2px 0; }
+    .icono-version { color:var(--azul); }
+    footer a { color:#236943; text-decoration:none; }
+    code { white-space:nowrap; }
+    @media (max-width:600px) {
+      body { padding:0 12px 16px; }
+      main { margin-top:16px; padding:16px; }
+      .logo-qubit { width:46px; height:46px; flex-basis:46px; }
+      h1 { font-size:1.25rem; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      .pantalla-carga { transition:none; }
+      .spinner { animation:none; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="particulas" aria-hidden="true"></canvas>
+<nav class="navbar navbar-expand-md bg-white border-bottom barra-sitio" aria-label="Navegación principal">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt="">Qubit Física</a>
+    <div class="navbar-nav flex-row flex-wrap column-gap-3">
+      <a class="nav-link" href="index.html">Inicio</a>
+      <a class="nav-link active" href="vernier.html" aria-current="page">Vernier</a>
+      <a class="nav-link" href="micrometro.html">Micrómetro</a>
+    </div>
+  </div>
+</nav>
+<div class="pantalla-carga" id="pantallaCarga" role="status" aria-live="polite">
+  <img class="gif-qubit" src="qubit.gif" alt="Qubit">
+  <span class="spinner" aria-hidden="true"></span>
+  <span>Cargando simulador vernier...</span>
+</div>
+<main inert>
+  <header class="encabezado">
+    <img class="logo-qubit" src="logoQubit.svg" alt="Qubit">
+    <h1>Simulador de Calibre Vernier - Prof. en Física Augusto Alterats</h1>
+  </header>
+  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. En mm/cm, la regla tiene marcas cada 1 mm; en pulgadas, cada 1/16 in. <span id="precision" hidden>La precisión es p= <strong id="resolucion">0,1 mm</strong>.</span></p>
+  <fieldset class="opciones">
+    <legend>Mostrar ayudas</legend>
+    <label><input id="mostrarPrecision" type="checkbox" aria-controls="precision"> Precisión</label>
+    <label><input id="mostrarResultado" type="checkbox" aria-controls="lectura"> Resultado de la medida</label>
+    <label><input id="mostrarCoincidencia" type="checkbox" aria-controls="vernier"> Número de coincidencia</label>
+  </fieldset>
+  <div id="panel">
+    <button class="btn btn-primary" id="nuevo">Nueva medición</button>
+    <label for="posicion">Posición:</label>
+    <input id="posicion" type="range" min="0" max="1200" step="1" value="374">
+    <label for="divisiones">Divisiones del nonio:</label>
+    <select class="form-select w-auto" id="divisiones">
+      <option value="10" selected>10</option>
+      <option value="15">15</option>
+      <option value="20">20</option>
+    </select>
+    <label for="unidad">Unidad:</label>
+    <select class="form-select w-auto" id="unidad" aria-label="Unidad de la lectura">
+      <option value="mm" selected>mm</option>
+      <option value="cm">cm</option>
+      <option value="in">in</option>
+    </select>
+    <output id="lectura" aria-live="polite" hidden>L = 37,4 mm; ΔL = 0,1 mm</output>
+  </div>
+  <canvas id="vernier" width="1024" height="390" aria-label="Regla Vernier interactiva"></canvas>
+  <div class="nota">
+    <strong>Lectura:</strong>
+    <ol>
+      <li>En la regla principal, lea el valor que queda a la izquierda del cero del nonio.</li>
+      <li>Si el cero del nonio coincide exactamente con una marca de la regla principal, esa es la lectura; el nonio aporta 0 de la unidad elegida.</li>
+      <li>Si no coincide, busque la división del nonio que coincide con una marca principal. Cuente las divisiones desde el cero, multiplique ese número por la precisión del nonio y sume el resultado a la lectura de la regla principal.</li>
+    </ol>
+    <p class="ecuacion"><strong>L = L′ + n · p</strong></p>
+    <p class="variables">L: lectura total; L′: lectura de la regla principal; n: número de divisiones hasta la coincidencia; p: precisión del nonio; ΔL: error de la medida, tomado igual a p.</p>
+  </div>
+</main>
+<footer>
+  <p><span class="icono-version">✳️</span> Versión 1.0.1</p>
+  <p>© Copyright <strong>2026 Qubit Física</strong>. Todos los derechos reservados.</p>
+  <p>Diseñado por <a href="https://github.com/qubitfisica">augusalterats</a> | <a href="https://qubitfisica.com.ar/LICENSE.md">Licencia MIT</a></p>
+</footer>
+<script>
+  const canvas = document.querySelector('#vernier');
+  const ctx = canvas.getContext('2d');
+  const range = document.querySelector('#posicion');
+  const lectura = document.querySelector('#lectura');
+  const nuevo = document.querySelector('#nuevo');
+  const divisionesInput = document.querySelector('#divisiones');
+  const unidadInput = document.querySelector('#unidad');
+  const resolucion = document.querySelector('#resolucion');
+  const precision = document.querySelector('#precision');
+  const mostrarPrecision = document.querySelector('#mostrarPrecision');
+  const mostrarResultado = document.querySelector('#mostrarResultado');
+  const mostrarCoincidencia = document.querySelector('#mostrarCoincidencia');
+  const pxPorMm = 6, x0 = 75, yRegla = 145, yNonio = 145;
+  let divisiones = Number(divisionesInput.value);
+  let unidad = unidadInput.value;
+  let pasoReglaMm = unidad === 'in' ? 25.4 / 16 : 1;
+  let medida = Number(range.value) * pasoReglaMm / divisiones;
+  let punteroActivo = null, desplazamientoArrastre = 0;
+
+  const coma = n => {
+    if (unidad === 'in') {
+      const denominador = 16 * divisiones;
+      const numerador = Math.round(n * denominador / 25.4);
+      const entero = Math.floor(numerador / denominador);
+      const resto = numerador % denominador;
+      if (!resto) return String(entero);
+      const maxComun = (a, b) => b ? maxComun(b, a % b) : a;
+      const divisor = maxComun(resto, denominador);
+      const fraccion = `${resto / divisor}/${denominador / divisor}`;
+      return entero ? `${entero} ${fraccion}` : fraccion;
+    }
+    const decimalesMm = divisiones === 10 ? 1 : divisiones === 15 ? 4 : 2;
+    const decimales = unidad === 'cm' ? decimalesMm + 1 : decimalesMm;
+    return (n * (unidad === 'cm' ? 0.1 : 1))
+      .toFixed(decimales).replace(/\.?0+$/, '').replace('.', ',');
+  };
+  function linea(x1, y1, x2, y2, ancho=1, color='#17243f') {
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineWidth=ancho; ctx.strokeStyle=color; ctx.stroke();
+  }
+  function texto(t,x,y,tam=14,alinear='center',color='#17243f') {
+    ctx.font = `${tam}px Arial`; ctx.textAlign=alinear; ctx.fillStyle=color; ctx.fillText(t,x,y);
+  }
+  function dibujar() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // Regla principal sobre el fondo blanco del canvas.
+    linea(x0,yRegla,canvas.width-36,yRegla,3,'#17243f');
+    if (unidad === 'in') {
+      const mmPorDieciseisavo = 25.4 / 16;
+      for (let marca=0; ; marca++) {
+        const x=x0+marca*mmPorDieciseisavo*pxPorMm;
+        if(x>canvas.width-30) break;
+        const alto=marca%16===0?65:marca%8===0?50:marca%4===0?40:marca%2===0?33:25;
+        linea(x,yRegla,x,yRegla-alto,marca%16===0?2.3:1.25);
+        if(marca%16===0) texto(marca/16,x,yRegla-77,16);
+      }
+    } else {
+      // En mm y cm, cada marca equivale a 1 mm.
+      for (let mm=0; mm<=160; mm++) {
+        const x=x0+mm*pxPorMm;
+        if(x>canvas.width-30) break;
+        const alto= mm%10===0 ? 65 : mm%5===0 ? 47 : 29;
+        linea(x,yRegla,x,yRegla-alto,mm%10===0?2.3:1.25);
+        if(mm%10===0) texto(coma(mm),x,yRegla-77,16);
+      }
+    }
+    texto(`REGLA PRINCIPAL (${unidad})`, canvas.width/2,30,15,'center','#314986');
+    // Carro: su cero corresponde a la medida elegida.
+    const xcero=x0+medida*pxPorMm;
+    const coincidencia=Math.round((medida/pasoReglaMm-Math.floor(medida/pasoReglaMm))*divisiones)%divisiones;
+    const pasoNonio=(divisiones-1)/divisiones*pasoReglaMm;
+    const largoNonio=(divisiones-1)*pasoReglaMm*pxPorMm;
+    // El nonio comienza pegado a la línea base de la escala principal.
+    linea(xcero,yNonio+74,xcero+largoNonio,yNonio+74,1.5,'#7b8794');
+    for(let i=0;i<=divisiones;i++) {
+      const x=xcero+i*pasoNonio*pxPorMm;
+      const alto=i===0?72: i===divisiones?74:34;
+      const coincide=i===coincidencia;
+      linea(x,yNonio,x,yNonio+alto,coincide?2.8:i===0?2:1.2,coincide?'#c2410c':'#263238');
+      if(i%5===0||i===divisiones) texto(i,x,yNonio+85,12,'center','#263238');
+    }
+    texto(`NONIO: ${divisiones} divisiones (p=${coma(1/divisiones)} ${unidad})`,xcero+largoNonio/2,yNonio+145,12,'center','#263238');
+    const xCoincide=xcero+coincidencia*pasoNonio*pxPorMm;
+    if (mostrarCoincidencia.checked) {
+      texto(`Coincidencia n = ${coincidencia}`,xCoincide,yNonio+110,13,'center','#c2410c');
+    }
+    precision.hidden = !mostrarPrecision.checked;
+    lectura.hidden = !mostrarResultado.checked;
+    resolucion.textContent=`${coma(1/divisiones)} ${unidad}`;
+    lectura.textContent=`L = ${coma(medida)} ${unidad}; ΔL = ${coma(1/divisiones)} ${unidad}`;
+    range.setAttribute('aria-valuetext',`${coma(medida)} ${unidad}`);
+  }
+  function establecer(valor) {
+    const maximoPasos=Math.floor(120*divisiones/pasoReglaMm);
+    const pasos=Math.max(0,Math.min(maximoPasos,Math.round(valor*divisiones/pasoReglaMm)));
+    medida=pasos*pasoReglaMm/divisiones;
+    range.max=maximoPasos;
+    range.value=pasos;
+    dibujar();
+  }
+  [mostrarPrecision, mostrarResultado, mostrarCoincidencia].forEach(control => {
+    control.addEventListener('change', dibujar);
+  });
+  range.addEventListener('input',e=>establecer(Number(e.target.value)*pasoReglaMm/divisiones));
+  divisionesInput.addEventListener('change',e=>{
+    divisiones=Number(e.target.value);
+    establecer(medida);
+  });
+  unidadInput.addEventListener('change',e=>{
+    unidad=e.target.value;
+    pasoReglaMm=unidad==='in'?25.4/16:1;
+    establecer(medida);
+  });
+  nuevo.addEventListener('click',()=>establecer(Math.random()*120));
+  function puntoCanvas(e) {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left - canvas.clientLeft) * canvas.width / canvas.clientWidth,
+      y: (e.clientY - r.top - canvas.clientTop) * canvas.height / canvas.clientHeight
+    };
+  }
+  function sobreNonio(punto) {
+    const inicio = x0 + medida * pxPorMm;
+    const fin = inicio + (divisiones - 1) * pasoReglaMm * pxPorMm;
+    return punto.x >= inicio - 6 && punto.x <= fin + 6 &&
+      punto.y >= yNonio && punto.y <= yNonio + 90;
+  }
+  canvas.addEventListener('pointerdown', e => {
+    if (punteroActivo !== null || !e.isPrimary || e.button !== 0) return;
+    const punto = puntoCanvas(e);
+    if (!sobreNonio(punto)) return;
+    punteroActivo = e.pointerId;
+    // Conserva el punto de agarre para que el nonio no salte al tocarlo.
+    desplazamientoArrastre = punto.x - (x0 + medida * pxPorMm);
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = 'grabbing';
+  });
+  canvas.addEventListener('pointermove', e => {
+    const punto = puntoCanvas(e);
+    if (punteroActivo !== null) {
+      if (e.pointerId === punteroActivo) {
+        establecer((punto.x - desplazamientoArrastre - x0) / pxPorMm);
+      }
+      return;
+    }
+    canvas.style.cursor = sobreNonio(punto) ? 'grab' : 'default';
+  });
+  function terminarArrastre(e) {
+    if (e.pointerId !== punteroActivo) return;
+    punteroActivo = null;
+    if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+    canvas.style.cursor = 'default';
+  }
+  canvas.addEventListener('pointerup', terminarArrastre);
+  canvas.addEventListener('pointercancel', terminarArrastre);
+  canvas.addEventListener('lostpointercapture', terminarArrastre);
+  canvas.addEventListener('pointerleave', () => {
+    if (punteroActivo === null) canvas.style.cursor = 'default';
+  });
+  dibujar();
+  window.addEventListener('load',()=>setTimeout(()=>{
+    document.querySelector('#pantallaCarga').classList.add('oculta');
+    document.querySelector('main').removeAttribute('inert');
+  },2000));
+</script>
+<script src="particulas.js"></script>
+</body>
+</html>
