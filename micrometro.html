@@ -3,18 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Simulador de Micrómetro con Nonio</title>
+  <title>Simulador de Micrómetro</title>
   <meta name="description" content="Simulador interactivo de micrómetro con nonio para practicar lecturas en milímetros.">
   <link rel="icon" type="image/svg+xml" href="icoQubit.svg">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    :root { --azul:#314986; --oscuro:#17243f; --verde:#236943; --naranja:#c2410c; }
+    :root { --azul:#314986; --oscuro:#17243f; --verde:#236943; --verde-marca:#4b8f57; --naranja:#c2410c; }
     * { box-sizing:border-box; }
     body { margin:0; padding:0 12px 24px; font-family:Arial,sans-serif; background:#f4f6fa; color:var(--oscuro); }
     #particulas { position:fixed; z-index:0; inset:0; display:block; width:100%; height:100%; pointer-events:none; }
     .barra-sitio { position:relative; z-index:11; }
     .barra-sitio .container { max-width:1000px; }
     .navbar-brand img { width:38px; height:38px; object-fit:contain; }
+    .navbar-brand { color:var(--verde-marca); transition:color .18s ease; }
+    .navbar-brand:hover, .navbar-brand:focus { color:#3e7f49; }
+    .barra-sitio .nav-link { border:1px solid transparent; border-radius:6px; transition:border-color .18s ease, box-shadow .18s ease; }
+    .barra-sitio .nav-link:hover, .barra-sitio .nav-link:focus-visible { background:transparent; border-color:var(--azul); color:var(--azul); box-shadow:0 2px 7px #17243f24; }
     .pantalla-carga { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#f4f6fa; pointer-events:none; transition:opacity .35s, visibility .35s; }
     .pantalla-carga.oculta { opacity:0; visibility:hidden; }
     .gif-qubit { width:140px; height:140px; object-fit:contain; }
@@ -22,7 +26,9 @@
     @keyframes girar { to { transform:rotate(360deg); } }
     main { position:relative; z-index:1; max-width:1000px; margin:24px auto 0; background:#fff; padding:24px; border-radius:12px; box-shadow:0 4px 18px #14204220; }
     .encabezado { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
-    .logo-qubit { display:block; width:56px; height:56px; flex:0 0 56px; object-fit:contain; }
+    .instrumento-icono { display:block; width:56px; height:56px; flex:0 0 56px; color:var(--azul); }
+    .instrumento-icono * { fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+    .instrumento-icono .brote { stroke:var(--verde-marca); }
     h1 { margin:0; color:var(--azul); font-size:1.55rem; }
     p { margin:8px 0 18px; line-height:1.45; }
     fieldset { display:flex; flex-wrap:wrap; gap:12px 20px; margin:0 0 16px; padding:12px; border:1px solid #c9d2e4; border-radius:7px; }
@@ -51,7 +57,7 @@
     @media (max-width:650px) {
       body { padding:0 12px 16px; }
       main { margin-top:16px; padding:16px; }
-      .logo-qubit { width:46px; height:46px; flex-basis:46px; }
+      .instrumento-icono { width:46px; height:46px; flex-basis:46px; }
       h1 { font-size:1.25rem; }
       .componentes { grid-template-columns:1fr; }
       #lectura { width:100%; margin-left:0; }
@@ -72,14 +78,14 @@
 </div>
 <nav class="navbar navbar-expand-md bg-white border-bottom barra-sitio" aria-label="Navegación principal">
   <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt="">Qubit Física</a>
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt="">Facultad de Ciencias Agrarias - UNNE</a>
     <div class="navbar-nav flex-row flex-wrap column-gap-3">
       <a class="nav-link" href="index.html">Inicio</a>
       <div class="nav-item dropdown">
         <button class="nav-link dropdown-toggle active" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Unidad 1 Mediciones</button>
         <ul class="dropdown-menu">
           <li><a class="dropdown-item" href="vernier.html">Calibre Vernier</a></li>
-          <li><a class="dropdown-item active" href="micrometro.html" aria-current="page">Micrómetro</a></li>
+          <li><span class="dropdown-item active" aria-current="page">Micrómetro</span></li>
         </ul>
       </div>
     </div>
@@ -87,15 +93,19 @@
 </nav>
 <main inert>
   <header class="encabezado">
-    <img class="logo-qubit" src="logoQubit.svg" alt="Qubit">
-    <h1>Simulador de Calibre Vernier - Prof. en Física Augusto Alterats</h1>
+    <svg class="instrumento-icono" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+      <path d="M42 10H30a18 18 0 1 0 0 36h12M42 10v11M42 45V35"/>
+      <path d="M24 28h7M37 28h2M39 24v8h5M44 22h7v12h-7zM47 23v2M49 23v2M47 31v2M49 31v2"/>
+      <path class="brote" d="M31 28c0-5 4-7 7-5-1 4-3 5-7 5m1-1 5-3"/>
+    </svg>
+    <h1>Simulador de Micrómetro - Física Aplicada</h1>
   </header>
   <p>Arrastre el tambor o use el deslizador para cambiar la abertura. La lectura suma la escala del manguito, el tambor y la coincidencia del nonio.</p>
   <fieldset>
     <legend>Mostrar ayudas</legend>
-    <label><input id="mostrarPrecision" type="checkbox" checked> Precisión</label>
-    <label><input id="mostrarResultado" type="checkbox" checked> Resultado</label>
-    <label><input id="mostrarCoincidencia" type="checkbox" checked> Coincidencia del nonio</label>
+    <label><input id="mostrarPrecision" type="checkbox"> Precisión</label>
+    <label><input id="mostrarResultado" type="checkbox"> Resultado</label>
+    <label><input id="mostrarCoincidencia" type="checkbox"> Coincidencia del nonio</label>
   </fieldset>
   <div id="panel">
     <button class="btn btn-primary" id="nuevo" type="button">Nueva medición</button>

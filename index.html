@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Selecciona un instrumento para practicar mediciones de Física.">
-  <title>Simuladores de medición | Física</title>
+  <title>Simuladores | Física Aplicada</title>
   <link rel="icon" type="image/svg+xml" href="icoQubit.svg">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
@@ -13,6 +13,7 @@
       --tinta: #17243f;
       --azul: #314986;
       --verde: #236943;
+      --verde-marca: #4b8f57;
       --fondo: #f4f6fa;
       --linea: #c9d2e4;
     }
@@ -29,6 +30,10 @@
     .barra-sitio { position: relative; z-index: 11; }
     .barra-sitio .container { max-width: 1000px; }
     .navbar-brand img { width: 38px; height: 38px; object-fit: contain; }
+    .navbar-brand { color: var(--verde-marca); transition: color .18s ease; }
+    .navbar-brand:hover, .navbar-brand:focus { color: #3e7f49; }
+    .barra-sitio .nav-link { border: 1px solid transparent; border-radius: 6px; transition: border-color .18s ease, box-shadow .18s ease; }
+    .barra-sitio .nav-link:hover, .barra-sitio .nav-link:focus-visible { background: transparent; border-color: var(--azul); color: var(--azul); box-shadow: 0 2px 7px #17243f24; }
     .pantalla-carga { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: var(--fondo); pointer-events: none; transition: opacity .35s, visibility .35s; }
     .pantalla-carga.oculta { opacity: 0; visibility: hidden; }
     .gif-qubit { width: 140px; height: 140px; object-fit: contain; }
@@ -67,8 +72,26 @@
     .opcion:last-child .simbolo { color: var(--verde); }
     h2 { margin: 0; font-size: 1.3rem; }
     .descripcion { margin: 8px 0 22px; color: #536078; line-height: 1.45; }
-    .abrir { margin-top: auto; color: var(--azul); font-weight: 700; }
-    .opcion:last-child .abrir { color: var(--verde); }
+    .abrir {
+      display: inline-flex;
+      align-items: center;
+      align-self: center;
+      gap: 10px;
+      margin-top: auto;
+      padding: 7px 11px;
+      border-radius: 6px;
+      background: var(--azul);
+      box-shadow: 0 2px 5px #17243f20;
+      color: #fff;
+      font-size: .92rem;
+      font-weight: 700;
+      transition: background-color .18s ease, box-shadow .18s ease;
+    }
+    .opcion:last-child .abrir { background: var(--verde); }
+    .opcion:hover .abrir { background: #213665; box-shadow: 0 4px 9px #17243f30; }
+    .opcion:last-child:hover .abrir { background: #184f32; }
+    .abrir > span { transition: transform .18s ease; }
+    .opcion:hover .abrir > span { transform: translateX(3px); }
     footer { position: relative; z-index: 1; margin: 22px auto 0; color: #536078; font-size: .88rem; line-height: 1.6; text-align: center; }
     footer p { margin: 2px 0; }
     footer a { color: var(--verde); text-decoration: none; }
@@ -93,7 +116,7 @@
   </div>
   <nav class="navbar navbar-expand-md bg-white border-bottom barra-sitio" aria-label="Navegación principal">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt="">Qubit Física</a>
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt="">Facultad de Ciencias Agrarias - UNNE</a>
       <div class="navbar-nav flex-row flex-wrap column-gap-3">
         <a class="nav-link active" href="index.html" aria-current="page">Inicio</a>
         <div class="nav-item dropdown">
@@ -108,9 +131,9 @@
   </nav>
   <main inert>
     <header>
-      <p class="sobrelinea">Física · instrumentos de medición</p>
+      <p class="sobrelinea">Física Aplicada · Facultad de Ciencias Agrarias</p>
       <h1>Elige un simulador</h1>
-      <p>Selecciona el instrumento que quieres utilizar.</p>
+      <p>Selecciona el simulador que quieres utilizar.</p>
     </header>
     <nav class="opciones" aria-label="Simuladores disponibles">
       <a class="opcion card" href="vernier.html">
