@@ -203,6 +203,7 @@
       <option value="10" selected>10</option>
       <option value="15">15</option>
       <option value="20">20</option>
+      <option value="50">50</option>
     </select>
     </div>
     <div class="control-grupo">
@@ -263,7 +264,8 @@
   const mostrarPrecision = document.querySelector('#mostrarPrecision');
   const mostrarResultado = document.querySelector('#mostrarResultado');
   const mostrarCoincidencia = document.querySelector('#mostrarCoincidencia');
-  const pxPorMm = 6, x0 = 75, yRegla = 145, yNonio = 145;
+  const x0 = 75, yRegla = 145, yNonio = 145;
+  let pxPorMm = 6;
   let divisiones = Number(divisionesInput.value);
   let unidad = unidadInput.value;
   let pasoReglaMm = unidad === 'in' ? 25.4 / 16 : 1;
@@ -294,6 +296,8 @@
     ctx.font = `${tam}px Arial`; ctx.textAlign=alinear; ctx.fillStyle=color; ctx.fillText(t,x,y);
   }
   function dibujar() {
+    // Deja espacio para el nonio completo incluso en la abertura máxima.
+    pxPorMm = Math.min(6, (canvas.width-x0-36)/(120+(divisiones-1)*pasoReglaMm));
     ctx.clearRect(0,0,canvas.width,canvas.height);
     // Regla principal sobre el fondo blanco del canvas.
     linea(x0,yRegla,canvas.width-36,yRegla,3,'#17243f');
