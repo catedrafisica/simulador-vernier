@@ -109,9 +109,11 @@
   $('comprobar').addEventListener('click',()=>{
     snapTarget();
     const error=Number(nivel.value)-Number(objetivo.value);
-    const ok=Math.abs(error)<=.0251;
+    // Accept a small offset on either side, proportional to the selected scale.
+    const tolerance=1/Number(divisiones.value)/4;
+    const ok=Math.abs(error)<=tolerance+1e-9;
     $('estado').style.color=ok?'#236943':'#a7370b';
-    $('estado').textContent=ok?'¡Enrase correcto! El punto de lectura coincide con la marca.':`El líquido está ${error>0?'por encima':'por debajo'} de la marca. ${error>0?'Baja':'Sube'} el líquido para enrasar.`;
+    $('estado').textContent=ok?'¡Enrase correcto! El punto de lectura está dentro del margen aceptado de la marca.':`El líquido está ${error>0?'por encima':'por debajo'} de la marca. ${error>0?'Baja':'Sube'} el líquido para enrasar.`;
   });
   function drag(e) {
     const rect=canvas.getBoundingClientRect();
