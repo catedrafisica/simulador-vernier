@@ -67,6 +67,9 @@
       .pantalla-carga { transition:none; }
       .spinner { animation:none; }
     }
+    .menu-parte { max-width: calc(100vw - 24px); max-height: 70vh; overflow-y: auto; }
+    .menu-parte .dropdown-header { white-space: normal; overflow-wrap: anywhere; }
+    .menu-parte .titulo-parte { color: var(--azul); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -82,12 +85,76 @@
     <div class="navbar-nav flex-row flex-wrap column-gap-3">
       <a class="nav-link" href="index.html">Inicio</a>
       <div class="nav-item dropdown">
-        <button class="nav-link dropdown-toggle active" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="page">Unidad 1 Mediciones</button>
-        <ul class="dropdown-menu">
+        <button class="nav-link dropdown-toggle active" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte I</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">MECÁNICA</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 1 - MEDICIONES</h6></li>
           <li><a class="dropdown-item" href="vernier.html">Calibre Vernier</a></li>
           <li><span class="dropdown-item active" aria-current="page">Micrómetro</span></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 2 - ESTÁTICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 3 - CINEMÁTICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 4 - DINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 5 - TRABAJO Y ENERGÍA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
         </ul>
       </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte II</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">ESTÁTICA Y DINÁMICA DE LOS FLUIDOS</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 6 - HIDROSTÁTICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 7 - HIDRODINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 8 - FENÓMENOS DE TRANSPORTE</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 9 - FENÓMENOS DE SUPERFICIE</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte III</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">CALOR Y TERMODINÁMICA</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 10 - CALOR Y TEMPERATURA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 11 - TRABAJO EN TERMODINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte IV</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">ELECTRICIDAD Y MAGNETISMO</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 12 - CAMPO ELÉCTRICO</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 13 - CIRCUITOS DE CORRIENTE CONTINUA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 14 - CAMPO MAGNÉTICO Y FEM INDUCIDA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 15 - ONDAS Y ESPECTRO ELECTROMAGNÉTICO</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <a class="nav-link" href="index.html#nosotros">+ Nosotros</a>
     </div>
   </div>
 </nav>
