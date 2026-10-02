@@ -203,7 +203,22 @@
     </select>
     <output id="lectura" aria-live="polite" hidden>L = 37,4 mm; ΔL = 0,1 mm</output>
   </div>
+  <section class="zoom-instrumento" aria-label="Ampliación de la escala">
+    <div class="zoom-controles">
+      <span>Zoom de la escala</span>
+      <button type="button" data-zoom="menos" aria-label="Reducir escala">−</button>
+      <output class="zoom-nivel" aria-live="polite">100 %</output>
+      <button type="button" data-zoom="mas" aria-label="Ampliar escala">+</button>
+      <button type="button" data-zoom="restablecer">Restablecer</button>
+    </div>
+    <p class="zoom-ayuda">Amplía para leer las marcas. Usa «Recorrer escala» para ver otras partes; puedes seguir arrastrando el instrumento.</p>
+    <div class="escala-ventana" tabindex="0" role="region" aria-label="Escala ampliable; usa las flechas para recorrerla">
   <canvas id="vernier" width="1024" height="390" aria-label="Regla Vernier interactiva"></canvas>
+    </div>
+    <label class="zoom-recorrido" hidden>Recorrer escala
+      <input type="range" min="0" max="100" value="0" step="0.1" aria-label="Recorrer la escala ampliada">
+    </label>
+  </section>
   <div class="nota">
     <strong>Lectura:</strong>
     <ol>
@@ -389,5 +404,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="particulas.js"></script>
 <script src="version.js"></script>
+<script src="zoom.js"></script>
 </body>
 </html>

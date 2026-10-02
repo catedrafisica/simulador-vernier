@@ -22,6 +22,19 @@
 .barra-sitio .navbar-nav > .dropdown:last-child .dropdown-menu { right: 0; left: auto; }
 main, .encabezado h1, fieldset { min-width: 0; }
 footer, .nota, #lectura { overflow-wrap: anywhere; }
+.zoom-instrumento { min-width: 0; margin-bottom: 16px; }
+.zoom-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.zoom-controles > span { font-weight: bold; }
+.zoom-controles button { min-width: 44px; min-height: 44px; }
+.zoom-controles button:disabled { opacity: .45; cursor: default; }
+.zoom-controles button:focus-visible, .escala-ventana:focus-visible { outline: 3px solid #c2410c; outline-offset: 2px; }
+.zoom-nivel { min-width: 65px; text-align: center; font-weight: bold; }
+.zoom-ayuda { margin: 8px 0; color: #536078; font-size: .9rem; }
+.escala-ventana { width: 100%; overflow-x: auto; border: 1px solid #c9d2e4; border-radius: 8px; }
+.escala-ventana canvas { max-width: none; border: 0; border-radius: 0; }
+.zoom-recorrido { display: block; margin-top: 8px; }
+.zoom-recorrido[hidden] { display: none; }
+.zoom-recorrido input[type="range"] { display: block; width: 100%; min-height: 44px; }
 
 @media (max-width: 1199.98px) {
   .barra-sitio .navbar-brand { flex: 1; }
