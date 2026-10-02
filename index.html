@@ -114,6 +114,7 @@
     .menu-parte .dropdown-header { white-space: normal; overflow-wrap: anywhere; }
     .menu-parte .titulo-parte { color: var(--azul); font-weight: 700; }
   </style>
+  <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
   <canvas id="particulas" aria-hidden="true"></canvas>
@@ -122,10 +123,14 @@
     <span class="spinner" aria-hidden="true"></span>
     <span>Cargando inicio...</span>
   </div>
-  <nav class="navbar navbar-expand-md bg-white border-bottom barra-sitio" aria-label="Navegación principal">
+  <nav class="navbar navbar-expand-xl bg-white border-bottom barra-sitio" aria-label="Navegación principal">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt="">Facultad de Ciencias Agrarias - UNNE</a>
-      <div class="navbar-nav flex-row flex-wrap column-gap-3">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt=""><span>Facultad de Ciencias Agrarias - UNNE</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir o cerrar navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menuPrincipal">
+      <div class="navbar-nav ms-auto gap-1">
         <a class="nav-link active" href="index.html" aria-current="page">Inicio</a>
         <div class="nav-item dropdown">
           <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte I</button>
@@ -198,6 +203,7 @@
           </ul>
         </div>
       </div>
+    </div>
     </div>
   </nav>
   <main inert>

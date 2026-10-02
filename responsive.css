@@ -1,0 +1,55 @@
+/* Shared navigation and mobile layout for all three pages. */
+.barra-sitio .container { gap: 12px; }
+.barra-sitio .navbar-brand {
+  min-width: 0;
+  margin-right: 0;
+  white-space: normal;
+  font-size: clamp(.9rem, 2.4vw, 1.15rem);
+  line-height: 1.3;
+}
+.barra-sitio .navbar-brand img { flex-shrink: 0; }
+.barra-sitio .navbar-brand span { overflow-wrap: anywhere; }
+.barra-sitio .navbar-toggler {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 8px;
+  background: transparent;
+}
+.barra-sitio .nav-link { min-height: 44px; padding: 10px 12px; text-align: left; }
+.barra-sitio .dropdown-item { min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+.barra-sitio .dropdown-menu { width: min(350px, calc(100vw - 48px)); }
+.barra-sitio .navbar-nav > .dropdown:last-child .dropdown-menu { right: 0; left: auto; }
+main, .encabezado h1, fieldset { min-width: 0; }
+footer, .nota, #lectura { overflow-wrap: anywhere; }
+
+@media (max-width: 1199.98px) {
+  .barra-sitio .navbar-brand { flex: 1; }
+  .barra-sitio .navbar-collapse { flex-basis: 100%; }
+  .barra-sitio .navbar-nav { padding-top: 8px; border-top: 1px solid #c9d2e4; }
+  .barra-sitio .dropdown-menu {
+    width: 100%;
+    max-width: 100%;
+    max-height: 55vh;
+    max-height: 55dvh;
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .barra-sitio .container { padding-inline: 0; gap: 8px; }
+  .barra-sitio .navbar-brand img { width: 32px; height: 32px; }
+  .opcion { padding: 20px; }
+  .abrir { min-height: 44px; }
+  .encabezado { align-items: flex-start; gap: 10px; }
+  #panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  #panel > button, #panel > output { grid-column: 1 / -1; }
+  #panel > label { align-self: center; }
+  #panel input[type="range"] { width: 100%; min-width: 0; min-height: 44px; }
+  #panel .form-select { width: 100% !important; min-width: 0; min-height: 44px; }
+  #lectura { width: 100%; margin-left: 0; font-size: 1rem; }
+  fieldset label { min-height: 44px; }
+  fieldset input[type="checkbox"] { flex-shrink: 0; width: 18px; height: 18px; }
+  .ecuacion { font-size: 1rem; }
+  code { white-space: normal; overflow-wrap: anywhere; }
+}
