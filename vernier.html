@@ -53,6 +53,11 @@
     select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:white; color:var(--oscuro); font:inherit; }
     #lectura { margin-left:auto; font-size:1.15rem; font-weight:bold; color:var(--azul); }
     canvas { width:100%; max-width:100%; height:auto; display:block; border:1px solid #c9d2e4; border-radius:10px; background:#fff; touch-action:none; cursor:default; }
+    .componentes { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; margin-top:12px; margin-bottom:16px; background:#d7deea; border:1px solid #d7deea; border-radius:6px; overflow:hidden; }
+    .componentes[hidden] { display:none; }
+    .componente { padding:10px 12px; background:#f8f9fc; }
+    .componente span { display:block; margin-bottom:4px; color:#536078; font-size:.85rem; }
+    .componente strong { color:var(--azul); }
     .nota { padding:12px; border-left:4px solid var(--azul); background:#edf2fd; border-radius:4px; }
     .nota ol { margin:8px 0 0; padding-left:20px; }
     .nota li+li { margin-top:4px; }
@@ -69,6 +74,7 @@
       main { margin-top:16px; padding:16px; }
       .instrumento-icono { width:46px; height:46px; flex-basis:46px; }
       h1 { font-size:1.25rem; }
+      .componentes { grid-template-columns:1fr; }
     }
     @media (prefers-reduced-motion:reduce) {
       .pantalla-carga { transition:none; }
@@ -178,11 +184,11 @@
     </svg>
     <h1>Simulador de Calibre Vernier - Física Aplicada</h1>
   </header>
-  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. En mm/cm, la regla tiene marcas cada 1 mm; en pulgadas, cada 1/16 in. <span id="precision" hidden>La precisión es p= <strong id="resolucion">0,1 mm</strong>.</span></p>
+  <p>Pulse nueva medición o arrastre el nonio sobre la regla principal o use el deslizador. En mm/cm, la regla tiene marcas cada 1 mm; en pulgadas, cada 1/16 in.</p>
   <fieldset class="opciones">
     <legend>Mostrar ayudas</legend>
-    <label><input id="mostrarPrecision" type="checkbox" aria-controls="precision"> Precisión</label>
-    <label><input id="mostrarResultado" type="checkbox" aria-controls="lectura"> Resultado</label>
+    <label><input id="mostrarPrecision" type="checkbox" aria-controls="lectura"> Precisión</label>
+    <label><input id="mostrarResultado" type="checkbox" aria-controls="lectura componentesResultado"> Resultado</label>
     <label><input id="mostrarCoincidencia" type="checkbox" aria-controls="vernier"> Número de coincidencia</label>
   </fieldset>
   <div id="panel">
@@ -225,6 +231,10 @@
       <input type="range" min="0" max="100" value="0" step="0.1" aria-label="Recorrer la escala ampliada">
     </label>
   </section>
+  <div class="componentes" id="componentesResultado" aria-live="polite" hidden>
+    <div class="componente"><span>Regla principal</span><strong id="lecturaRegla">0 mm</strong></div>
+    <div class="componente"><span>Nonio</span><strong id="lecturaNonio">0 mm</strong></div>
+  </div>
   <div class="nota">
     <strong>Lectura:</strong>
     <ol>
@@ -250,8 +260,6 @@
   const nuevo = document.querySelector('#nuevo');
   const divisionesInput = document.querySelector('#divisiones');
   const unidadInput = document.querySelector('#unidad');
-  const resolucion = document.querySelector('#resolucion');
-  const precision = document.querySelector('#precision');
   const mostrarPrecision = document.querySelector('#mostrarPrecision');
   const mostrarResultado = document.querySelector('#mostrarResultado');
   const mostrarCoincidencia = document.querySelector('#mostrarCoincidencia');
@@ -311,7 +319,9 @@
     texto(`REGLA PRINCIPAL (${unidad})`, canvas.width/2,30,15,'center','#314986');
     // Carro: su cero corresponde a la medida elegida.
     const xcero=x0+medida*pxPorMm;
-    const coincidencia=Math.round((medida/pasoReglaMm-Math.floor(medida/pasoReglaMm))*divisiones)%divisiones;
+    const totalPasos=Math.round(medida*divisiones/pasoReglaMm);
+    const marcaRegla=Math.floor(totalPasos/divisiones);
+    const coincidencia=totalPasos%divisiones;
     const pasoNonio=(divisiones-1)/divisiones*pasoReglaMm;
     const largoNonio=(divisiones-1)*pasoReglaMm*pxPorMm;
     // El nonio comienza pegado a la línea base de la escala principal.
@@ -323,15 +333,17 @@
       linea(x,yNonio,x,yNonio+alto,coincide?2.8:i===0?2:1.2,coincide?'#c2410c':'#263238');
       if(i%5===0||i===divisiones) texto(i,x,yNonio+85,12,'center','#263238');
     }
-    texto(`NONIO: ${divisiones} divisiones (p=${coma(1/divisiones)} ${unidad})`,xcero+largoNonio/2,yNonio+145,12,'center','#263238');
+    texto(`NONIO: ${divisiones} divisiones (p=${coma(pasoReglaMm/divisiones)} ${unidad})`,xcero+largoNonio/2,yNonio+145,12,'center','#263238');
     const xCoincide=xcero+coincidencia*pasoNonio*pxPorMm;
     if (mostrarCoincidencia.checked) {
       texto(`Coincidencia n = ${coincidencia}`,xCoincide,yNonio+110,13,'center','#c2410c');
     }
-    precision.hidden = !mostrarPrecision.checked;
-    lectura.hidden = !mostrarResultado.checked;
-    resolucion.textContent=`${coma(1/divisiones)} ${unidad}`;
-    lectura.textContent=`(L ± ΔL) = (${coma(medida)} ± ${coma(1/divisiones)}) ${unidad}`;
+    const precision=coma(pasoReglaMm/divisiones);
+    document.querySelector('#lecturaRegla').textContent=`${coma(marcaRegla*pasoReglaMm)} ${unidad}`;
+    document.querySelector('#lecturaNonio').textContent=`${coma(coincidencia*pasoReglaMm/divisiones)} ${unidad}`;
+    lectura.hidden = !mostrarResultado.checked && !mostrarPrecision.checked;
+    document.querySelector('#componentesResultado').hidden = !mostrarResultado.checked;
+    lectura.textContent=`${mostrarResultado.checked?'(L ± ΔL) = ('+coma(medida)+' ± '+precision+') '+unidad:''}${mostrarPrecision.checked?(mostrarResultado.checked?' · ':'')+'p = '+precision+' '+unidad:''}`;
     range.setAttribute('aria-valuetext',`${coma(medida)} ${unidad}`);
   }
   function establecer(valor) {
