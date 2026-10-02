@@ -21,6 +21,8 @@
 .barra-sitio .dropdown-menu { width: min(350px, calc(100vw - 48px)); }
 .barra-sitio .navbar-nav > .dropdown:last-child .dropdown-menu { right: 0; left: auto; }
 main, .encabezado h1, fieldset { min-width: 0; }
+.control-grupo { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.control-grupo > label { flex-shrink: 0; }
 footer, .nota, #lectura { overflow-wrap: anywhere; }
 .zoom-instrumento { min-width: 0; margin-bottom: 16px; }
 .zoom-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -57,7 +59,8 @@ footer, .nota, #lectura { overflow-wrap: anywhere; }
   .encabezado { align-items: flex-start; gap: 10px; }
   #panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
   #panel > button, #panel > output { grid-column: 1 / -1; }
-  #panel > label { align-self: center; }
+  #panel > .control-grupo { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .control-grupo > label { align-self: center; }
   #panel input[type="range"] { width: 100%; min-width: 0; min-height: 44px; }
   #panel .form-select { width: 100% !important; min-width: 0; min-height: 44px; }
   #lectura { width: 100%; margin-left: 0; font-size: 1rem; }

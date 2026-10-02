@@ -187,20 +187,26 @@
   </fieldset>
   <div id="panel">
     <button class="btn btn-primary" id="nuevo">Nueva medición</button>
-    <label for="posicion">Posición:</label>
+    <div class="control-grupo">
+      <label for="posicion">Posición:</label>
     <input id="posicion" type="range" min="0" max="1200" step="1" value="374">
-    <label for="divisiones">Divisiones del nonio:</label>
+    </div>
+    <div class="control-grupo">
+      <label for="divisiones">Divisiones del nonio:</label>
     <select class="form-select w-auto" id="divisiones">
       <option value="10" selected>10</option>
       <option value="15">15</option>
       <option value="20">20</option>
     </select>
-    <label for="unidad">Unidad:</label>
+    </div>
+    <div class="control-grupo">
+      <label for="unidad">Unidad:</label>
     <select class="form-select w-auto" id="unidad" aria-label="Unidad de la lectura">
       <option value="mm" selected>mm</option>
       <option value="cm">cm</option>
       <option value="in">in</option>
     </select>
+    </div>
     <output id="lectura" aria-live="polite" hidden>L = 37,4 mm; ΔL = 0,1 mm</output>
   </div>
   <section class="zoom-instrumento" aria-label="Ampliación de la escala">

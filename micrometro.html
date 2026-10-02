@@ -182,14 +182,22 @@
   </fieldset>
   <div id="panel">
     <button class="btn btn-primary" id="nuevo" type="button">Nueva medición</button>
-    <label for="posicion">Abertura:</label>
+    <div class="control-grupo">
+      <label for="posicion">Abertura:</label>
     <input id="posicion" type="range" min="0" max="25000" step="1" value="12734">
-    <label for="paso">Paso del tornillo:</label>
+    </div>
+    <div class="control-grupo">
+      <label for="paso">Paso del tornillo:</label>
     <select class="form-select w-auto" id="paso"><option value="0.5" selected>0,5 mm</option><option value="1">1 mm</option></select>
-    <label for="divisionesTambor">Tambor:</label>
+    </div>
+    <div class="control-grupo">
+      <label for="divisionesTambor">Tambor:</label>
     <select class="form-select w-auto" id="divisionesTambor"><option value="50" selected>50 divisiones</option><option value="100">100 divisiones</option></select>
-    <label for="divisionesNonio">Nonio:</label>
+    </div>
+    <div class="control-grupo">
+      <label for="divisionesNonio">Nonio:</label>
     <select class="form-select w-auto" id="divisionesNonio"><option value="10" selected>10 divisiones</option><option value="20">20 divisiones</option></select>
+    </div>
     <output id="lectura" aria-live="polite"></output>
   </div>
   <section class="zoom-instrumento" aria-label="Ampliación de la escala">
