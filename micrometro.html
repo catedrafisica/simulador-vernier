@@ -178,7 +178,7 @@
     <legend>Mostrar ayudas</legend>
     <label><input id="mostrarPrecision" type="checkbox"> Precisión</label>
     <label><input id="mostrarResultado" type="checkbox"> Resultado</label>
-    <label><input id="mostrarCoincidencia" type="checkbox"> Coincidencia del nonio</label>
+    <label><input id="mostrarCoincidencia" type="checkbox"> Número de coincidencia</label>
   </fieldset>
   <div id="panel">
     <button class="btn btn-primary" id="nuevo" type="button">Nueva medición</button>
@@ -327,7 +327,7 @@
     document.querySelector('#lecturaManguito').textContent=`${coma(lecturaManguito,1)} mm`;
     document.querySelector('#lecturaTambor').textContent=`${coma(lecturaTambor,decimales)} mm`;
     document.querySelector('#lecturaNonio').textContent=`${coma(lecturaNonio,decimales)} mm`;
-    lectura.textContent=`${mostrarResultado.checked?'L = '+coma(medida,decimales)+' mm':''}${mostrarPrecision.checked?(mostrarResultado.checked?' · ':'')+'p = '+coma(precisionMm(),decimales)+' mm':''}`;
+    lectura.textContent=`${mostrarResultado.checked?'(L ± ΔL) = ('+coma(medida,decimales)+' ± '+coma(precisionMm(),decimales)+') mm':''}${mostrarPrecision.checked?(mostrarResultado.checked?' · ':'')+'p = '+coma(precisionMm(),decimales)+' mm':''}`;
     range.setAttribute('aria-valuetext',`${coma(medida,decimales)} mm`);
   }
   function establecer(valor) {

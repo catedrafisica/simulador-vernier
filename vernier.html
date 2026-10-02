@@ -182,7 +182,7 @@
   <fieldset class="opciones">
     <legend>Mostrar ayudas</legend>
     <label><input id="mostrarPrecision" type="checkbox" aria-controls="precision"> Precisión</label>
-    <label><input id="mostrarResultado" type="checkbox" aria-controls="lectura"> Resultado de la medida</label>
+    <label><input id="mostrarResultado" type="checkbox" aria-controls="lectura"> Resultado</label>
     <label><input id="mostrarCoincidencia" type="checkbox" aria-controls="vernier"> Número de coincidencia</label>
   </fieldset>
   <div id="panel">
@@ -207,7 +207,7 @@
       <option value="in">in</option>
     </select>
     </div>
-    <output id="lectura" aria-live="polite" hidden>L = 37,4 mm; ΔL = 0,1 mm</output>
+    <output id="lectura" aria-live="polite" hidden>(L ± ΔL) = (37,4 ± 0,1) mm</output>
   </div>
   <section class="zoom-instrumento" aria-label="Ampliación de la escala">
     <div class="zoom-controles">
@@ -331,7 +331,7 @@
     precision.hidden = !mostrarPrecision.checked;
     lectura.hidden = !mostrarResultado.checked;
     resolucion.textContent=`${coma(1/divisiones)} ${unidad}`;
-    lectura.textContent=`L = ${coma(medida)} ${unidad}; ΔL = ${coma(1/divisiones)} ${unidad}`;
+    lectura.textContent=`(L ± ΔL) = (${coma(medida)} ± ${coma(1/divisiones)}) ${unidad}`;
     range.setAttribute('aria-valuetext',`${coma(medida)} ${unidad}`);
   }
   function establecer(valor) {
