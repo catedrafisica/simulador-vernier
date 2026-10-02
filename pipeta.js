@@ -6,6 +6,7 @@
   const top = 70, span = 600, left = 390, right = 510, center = 450;
   let active = null;
   const format = n => n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+  const withinTolerance = (value, target) => Math.abs(value-target)<=1/Number(divisiones.value)/4+1e-9;
   const y = v => top + v * span / 10;
   function line(x1,y1,x2,y2,color,width=1) {
     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.strokeStyle=color; ctx.lineWidth=width; ctx.stroke();
@@ -15,6 +16,7 @@
   }
   function draw() {
     const value = Number(nivel.value), target = Number(objetivo.value), d = Number(divisiones.value);
+    const reading = withinTolerance(value, target) ? target : value;
     const concave = tipo.value === 'concavo', mid = y(value), edge = mid + (concave ? -18 : 18);
     ctx.clearRect(0,0,1000,760);
     label('PIPETA GRADUADA · 10 ml',450,30,22,'#314986','center');
@@ -44,9 +46,9 @@
     }
     label(concave?'Moja las paredes · menisco cóncavo':'No moja las paredes · menisco convexo',450,755,18,'#314986','center');
     $('lectura').hidden=!$('mostrarResultado').checked;
-    $('lectura').textContent=`Lectura: ${format(value)} ml`;
+    $('lectura').textContent=`Lectura: ${format(reading)} ml`;
     $('division').textContent=`Cada división: ${format(1/d)} ml`;
-    canvas.setAttribute('aria-label',`Pipeta de 10 ml con menisco ${concave?'cóncavo':'convexo'}. Objetivo ${format(target)} ml.${$('mostrarResultado').checked ? ` Lectura ${format(value)} ml.` : ''}`);
+    canvas.setAttribute('aria-label',`Pipeta de 10 ml con menisco ${concave?'cóncavo':'convexo'}. Objetivo ${format(target)} ml.${$('mostrarResultado').checked ? ` Lectura ${format(reading)} ml.` : ''}`);
   }
   function setLevel(value) {
     nivel.value=String(Math.round(Math.min(10,Math.max(0,value))*200)/200);
@@ -106,8 +108,7 @@
     snapTarget();
     const error=Number(nivel.value)-Number(objetivo.value);
     // Accept a small offset on either side, proportional to the selected scale.
-    const tolerance=1/Number(divisiones.value)/4;
-    const ok=Math.abs(error)<=tolerance+1e-9;
+    const ok=withinTolerance(Number(nivel.value), Number(objetivo.value));
     $('estado').style.color=ok?'#236943':'#a7370b';
     $('estado').textContent=ok?'¡Enrase correcto! El punto de lectura está dentro del margen aceptado de la marca.':`El líquido está ${error>0?'por debajo':'por encima'} de la marca. ${error>0?'Sube':'Baja'} el líquido para enrasar.`;
   });
