@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador de Pipeta Graduada</title>
+  <meta name="description" content="Practica el enrase de una pipeta graduada con meniscos cóncavos y convexos y distintas divisiones de escala.">
+  <link rel="icon" type="image/svg+xml" href="icoQubit.svg">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --azul:#314986; --oscuro:#17243f; --verde:#236943; --verde-marca:#4b8f57; --verde-marca-claro:#5e9f66; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0 12px 24px; font-family:Arial,sans-serif; background:#f4f6fa; color:#17243f; }
+    #particulas { position:fixed; z-index:0; inset:0; display:block; width:100%; height:100%; pointer-events:none; }
+    .pantalla-carga { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#f4f6fa; pointer-events:none; transition:opacity .35s, visibility .35s; }
+    .pantalla-carga.oculta { opacity:0; visibility:hidden; }
+    .gif-qubit { width:140px; height:140px; object-fit:contain; }
+    .spinner { width:38px; height:38px; border:4px solid #c9d2e4; border-top-color:var(--azul); border-radius:50%; animation:girar .8s linear infinite; }
+    @keyframes girar { to { transform:rotate(360deg); } }
+    main { position:relative; z-index:1; max-width:1000px; margin:24px auto 0; background:white; padding:24px; border-radius:14px; box-shadow:0 4px 18px #14204220; }
+    .barra-sitio { position:relative; z-index:11; }
+    .barra-sitio .container { max-width:1000px; }
+    .navbar-brand img { width:38px; height:38px; object-fit:contain; }
+    .navbar-brand { color:var(--verde-marca-claro); transition:color .18s ease; }
+    .navbar-brand:hover, .navbar-brand:focus { color:#3e7f49; }
+    .barra-sitio .nav-link { border:1px solid transparent; border-radius:6px; transition:border-color .18s ease, box-shadow .18s ease; }
+    .barra-sitio .nav-link:hover, .barra-sitio .nav-link:focus-visible { background:transparent; border-color:var(--azul); color:var(--azul); box-shadow:0 2px 7px #17243f24; }
+    .encabezado { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
+    .instrumento-icono { display:block; width:56px; height:56px; flex:0 0 56px; object-fit:contain; }
+    h1 { margin:0 0 8px; color:var(--azul); font-size:1.55rem; }
+    p { margin:7px 0 18px; line-height:1.4; }
+    #panel { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+    button { border:0; padding:10px 15px; border-radius:7px; color:white; background:var(--azul); font-weight:bold; cursor:pointer; }
+    button:hover { background:#213665; }
+    label { font-weight:bold; }
+    input[type="range"] { width:190px; accent-color:var(--azul); }
+    input[type="checkbox"] { accent-color:var(--azul); }
+    .opciones { display:flex; flex-wrap:wrap; gap:12px 20px; margin:0 0 16px; padding:12px; border:1px solid #c9d2e4; border-radius:7px; }
+    .opciones legend { font-weight:bold; }
+    .opciones label { display:flex; align-items:center; gap:6px; cursor:pointer; }
+    select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:white; color:var(--oscuro); font:inherit; }
+    #lectura { margin-left:auto; font-size:1.15rem; font-weight:bold; color:var(--azul); }
+    canvas { width:100%; max-width:100%; height:auto; display:block; border:1px solid #c9d2e4; border-radius:10px; background:#fff; touch-action:none; cursor:default; }
+    .componentes { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; margin-top:12px; margin-bottom:16px; background:#d7deea; border:1px solid #d7deea; border-radius:6px; overflow:hidden; }
+    .componentes[hidden] { display:none; }
+    .componente { padding:10px 12px; background:#f8f9fc; }
+    .componente span { display:block; margin-bottom:4px; color:#536078; font-size:.85rem; }
+    .componente strong { color:var(--azul); }
+    .nota { padding:12px; border-left:4px solid var(--azul); background:#edf2fd; border-radius:4px; }
+    .nota ol { margin:8px 0 0; padding-left:20px; }
+    .nota li+li { margin-top:4px; }
+    .ecuacion { margin:12px 0 4px; text-align:center; font-size:1.15rem; }
+    .variables { margin:4px 0 0; font-size:.95rem; }
+    footer { position:relative; z-index:1; max-width:1000px; margin:16px auto 0; color:#536078; text-align:center; font-size:.85rem; line-height:1.6; }
+    footer p { margin:2px 0; }
+    .separador-version { width:min(480px,85%); margin:10px auto; border:0; border-top:1px solid #c9d2e4; opacity:1; }
+    .icono-version { color:var(--azul); }
+    footer a { color:#236943; text-decoration:none; }
+    code { white-space:nowrap; }
+    @media (max-width:600px) {
+      body { padding:0 12px 16px; }
+      main { margin-top:16px; padding:16px; }
+      .instrumento-icono { width:46px; height:46px; flex-basis:46px; }
+      h1 { font-size:1.25rem; }
+      .componentes { grid-template-columns:1fr; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      .pantalla-carga { transition:none; }
+      .spinner { animation:none; }
+    }
+    .menu-parte { max-width: calc(100vw - 24px); max-height: 70vh; overflow-y: auto; }
+    .menu-parte .dropdown-header { white-space: normal; overflow-wrap: anywhere; }
+    .menu-parte .titulo-parte { color: var(--azul); font-weight: 700; }
+      .practica { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:16px 0; }
+    .practica input { width:100px; padding:8px; border:1px solid #aebbd2; border-radius:6px; }
+    #estado { display:block; margin:12px 0; font-weight:bold; }
+    #pipeta { cursor:ns-resize; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid #c2410c; outline-offset:2px; }
+  </style>
+  <link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+<canvas id="particulas" aria-hidden="true"></canvas>
+<nav class="navbar navbar-expand-xl bg-white border-bottom barra-sitio" aria-label="Navegación principal">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt=""><span>Facultad de Ciencias Agrarias - UNNE</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir o cerrar navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menuPrincipal">
+      <div class="navbar-nav ms-auto gap-1">
+      <a class="nav-link" href="index.html">Inicio</a>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte I</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">MECÁNICA</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 1 - MEDICIONES</h6></li>
+          <li><a class="dropdown-item" href="vernier.html">Calibre Vernier</a></li>
+          <li><a class="dropdown-item" href="micrometro.html">Micrómetro</a></li>
+          <li><span class="dropdown-item active" aria-current="page">Pipeta graduada</span></li>
+          <li><a class="dropdown-item" href="probeta.html">Probeta graduada</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 2 - ESTÁTICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 3 - CINEMÁTICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 4 - DINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 5 - TRABAJO Y ENERGÍA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte II</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">ESTÁTICA Y DINÁMICA DE LOS FLUIDOS</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 6 - HIDROSTÁTICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 7 - HIDRODINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 8 - FENÓMENOS DE TRANSPORTE</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 9 - FENÓMENOS DE SUPERFICIE</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte III</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">CALOR Y TERMODINÁMICA</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 10 - CALOR Y TEMPERATURA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 11 - TRABAJO EN TERMODINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte IV</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">ELECTRICIDAD Y MAGNETISMO</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 12 - CAMPO ELÉCTRICO</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 13 - CIRCUITOS DE CORRIENTE CONTINUA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 14 - CAMPO MAGNÉTICO Y FEM INDUCIDA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 15 - ONDAS Y ESPECTRO ELECTROMAGNÉTICO</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+    </div>
+  </nav>
+<div class="pantalla-carga" id="pantallaCarga" role="status" aria-live="polite">
+  <img class="gif-qubit" src="qubit.gif" alt="Qubit">
+  <span class="spinner" aria-hidden="true"></span>
+  <span>Cargando simulador de pipeta...</span>
+</div>
+<main inert>
+  <header class="encabezado"><img class="instrumento-icono" src="logoQubit.svg" alt=""><h1>Simulador de Pipeta Graduada - Física Aplicada</h1></header>
+  <p>Arrastra el menisco o mueve el deslizador para enrasar el líquido con la marca objetivo. La escala indica el volumen entregado desde el cero, en ml.</p>
+  <fieldset class="opciones"><legend>Mostrar ayudas</legend>
+    <label><input id="mostrarResultado" type="checkbox"> Lectura del menisco</label>
+    <label><input id="mostrarGuia" type="checkbox"> Línea de lectura</label>
+    <label><input id="mostrarObjetivo" type="checkbox"> Línea de objetivo</label>
+  </fieldset>
+  <div id="panel">
+    <button id="nuevo" type="button">Nuevo enrase</button>
+    <div class="control-grupo"><label for="divisiones">Divisiones por ml:</label><select id="divisiones" class="form-select w-auto"><option value="2">2 (0,5 ml)</option><option value="5">5 (0,2 ml)</option><option value="10" selected>10 (0,1 ml)</option><option value="20">20 (0,05 ml)</option></select></div>
+    <div class="control-grupo"><label for="menisco">Líquido:</label><select id="menisco" class="form-select w-auto"><option value="concavo">Moja las paredes · cóncavo</option><option value="convexo">No moja las paredes · convexo</option></select></div>
+    <div class="control-grupo"><label for="posicion">Nivel del líquido:</label><input id="posicion" type="range" min="0" max="10" step="0.005" value="3.65"></div>
+    <button id="subir" type="button">Subir líquido ↑</button><button id="bajar" type="button">Bajar líquido ↓</button>
+    <output id="lectura" aria-live="polite" hidden></output>
+  </div>
+  <div class="practica"><label for="objetivo">Marca objetivo (ml):</label><input id="objetivo" type="number" min="0" max="10" step="0.1" value="4"><button id="comprobar" type="button">Comprobar enrase</button><span id="division"></span></div>
+  <output id="estado" aria-live="polite"></output>
+  <section class="zoom-instrumento" data-zoom-eje="vertical" aria-label="Ampliación de la escala de la pipeta">
+    <div class="zoom-controles">
+      <span>Zoom de la escala:</span>
+      <button type="button" data-zoom="menos" aria-label="Reducir escala">−</button>
+      <output class="zoom-nivel" aria-live="polite">100 %</output>
+      <button type="button" data-zoom="mas" aria-label="Ampliar escala">+</button>
+      <button type="button" data-zoom="restablecer">Restablecer</button>
+    </div>
+    <p class="zoom-ayuda">Amplía para leer las marcas del menisco. Usa «Recorrer escala» para subir o bajar por la pipeta; puedes seguir arrastrando el líquido.</p>
+    <div class="escala-ventana" tabindex="0" role="region" aria-label="Escala ampliable; usa las flechas para recorrerla">
+      <canvas id="pipeta" width="1000" height="760" role="img" aria-label="Pipeta graduada de 0 a 10 ml con menisco móvil. Usa los controles para ajustar el nivel."></canvas>
+    </div>
+    <label class="zoom-recorrido" hidden>Recorrer escala
+      <input type="range" min="0" max="100" step="0.1" value="0" aria-label="Recorrer verticalmente la escala de la pipeta">
+    </label>
+  </section>
+  <div class="nota" style="margin-top:16px"><strong>Cómo enrasar</strong><ol>
+    <li>Mantén la pipeta vertical y coloca los ojos a la altura del menisco para evitar el error de paralaje.</li>
+    <li>Si el líquido moja las paredes, el menisco es cóncavo: lee su punto central más bajo.</li>
+    <li>Si el líquido no moja las paredes, el menisco es convexo: lee su punto central más alto.</li>
+    <li>Ajusta ese punto hasta que coincida con la marca objetivo. Las divisiones indican el valor de cada intervalo de la escala.</li>
+  </ol><p style="margin:12px 0 0">En esta pipeta de 10 ml, las cifras aumentan hacia la punta. El volumen entregado entre dos lecturas es la lectura final menos la inicial. El dibujo representa una vista a la altura del menisco.</p></div>
+</main>
+<footer>
+  <hr class="separador-version">
+  <p><span class="icono-version">✳️</span> Versión <span data-app-version></span></p>
+  <p>© Copyright <strong>2026 Qubit Física</strong>. Todos los derechos reservados.</p>
+  <p>Diseñado por <a href="https://github.com/qubitfisica">augusalterats</a> | <a href="https://qubitfisica.com.ar/LICENSE.md">Licencia MIT</a></p>
+</footer>
+<script src="pipeta.js"></script>
+<script src="zoom.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="particulas.js"></script><script src="version.js"></script>
+<script>window.addEventListener('load', () => setTimeout(() => { document.querySelector('#pantallaCarga').classList.add('oculta'); document.querySelector('main').removeAttribute('inert'); }, 1000));</script>
+</body></html>

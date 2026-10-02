@@ -34,6 +34,7 @@ footer, .nota, #lectura { overflow-wrap: anywhere; }
 .zoom-ayuda { margin: 8px 0; color: #536078; font-size: .9rem; }
 .escala-ventana { width: 100%; overflow-x: auto; border: 1px solid #c9d2e4; border-radius: 8px; }
 .escala-ventana canvas { max-width: none; border: 0; border-radius: 0; }
+.zoom-instrumento[data-zoom-eje="vertical"] .escala-ventana { aspect-ratio: 1000 / 760; overflow: auto; }
 .zoom-recorrido { display: block; margin-top: 8px; }
 .zoom-recorrido[hidden] { display: none; }
 .zoom-recorrido input[type="range"] { display: block; width: 100%; min-height: 44px; }

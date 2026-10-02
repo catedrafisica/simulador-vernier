@@ -26,9 +26,7 @@
     @keyframes girar { to { transform:rotate(360deg); } }
     main { position:relative; z-index:1; max-width:1000px; margin:24px auto 0; background:#fff; padding:24px; border-radius:12px; box-shadow:0 4px 18px #14204220; }
     .encabezado { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
-    .instrumento-icono { display:block; width:56px; height:56px; flex:0 0 56px; color:var(--azul); }
-    .instrumento-icono * { fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-    .instrumento-icono .brote { stroke:var(--verde-marca); }
+    .instrumento-icono { display:block; width:56px; height:56px; flex:0 0 56px; object-fit:contain; }
     h1 { margin:0; color:var(--azul); font-size:1.55rem; }
     p { margin:8px 0 18px; line-height:1.45; }
     fieldset { display:flex; flex-wrap:wrap; gap:12px 20px; margin:0 0 16px; padding:12px; border:1px solid #c9d2e4; border-radius:7px; }
@@ -98,6 +96,8 @@
           <li><h6 class="dropdown-header">UNIDAD 1 - MEDICIONES</h6></li>
           <li><a class="dropdown-item" href="vernier.html">Calibre Vernier</a></li>
           <li><span class="dropdown-item active" aria-current="page">Micrómetro</span></li>
+          <li><a class="dropdown-item" href="pipeta.html">Pipeta graduada</a></li>
+          <li><a class="dropdown-item" href="probeta.html">Probeta graduada</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><h6 class="dropdown-header">UNIDAD 2 - ESTÁTICA</h6></li>
           <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
@@ -166,11 +166,7 @@
   </nav>
 <main inert>
   <header class="encabezado">
-    <svg class="instrumento-icono" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
-      <path d="M43 10H29a18 18 0 1 0 0 36h14M43 10v11M43 46V35"/>
-      <path d="M25 28h5M36 28h4M40 24v8h4M44 22h7v12h-7zM47 24v2M49 24v2M47 30v2M49 30v2"/>
-      <path class="brote" d="M30 28c1-5 5-7 7-5-1 4-3 5-7 5m1-1 4-3"/>
-    </svg>
+    <img class="instrumento-icono" src="logoQubit.svg" alt="" aria-hidden="true">
     <h1>Simulador de Micrómetro - Física Aplicada</h1>
   </header>
   <p>Arrastre el tambor o use el deslizador para cambiar la abertura. La lectura suma la escala del manguito, el tambor y la coincidencia del nonio.</p>
@@ -196,7 +192,7 @@
     </div>
     <div class="control-grupo">
       <label for="divisionesNonio">Nonio:</label>
-    <select class="form-select w-auto" id="divisionesNonio"><option value="10" selected>10 divisiones</option><option value="20">20 divisiones</option></select>
+    <select class="form-select w-auto" id="divisionesNonio"><option value="10" selected>10 divisiones</option><option value="20">20 divisiones</option><option value="50">50 divisiones</option></select>
     </div>
     <output id="lectura" aria-live="polite"></output>
   </div>
@@ -311,7 +307,7 @@
     }
     texto('TAMBOR',xBorde+68,161,11,'left','#314986');
     // Escala auxiliar esquemática del nonio; la coincidencia seleccionada se resalta.
-    const nonioY=311, nonioX=120, nonioGap=38;
+    const nonioY=311, nonioX=120, nonioGap=Math.min(38,(canvas.width-nonioX-40)/(divisionesNonio-1));
     texto(`NONIO · ${divisionesNonio} divisiones`,nonioX,292,13,'left','#314986');
     linea(nonioX,nonioY,nonioX+(divisionesNonio-1)*nonioGap,nonioY,1.5,'#7b8794');
     for(let i=0;i<divisionesNonio;i++) {
@@ -319,7 +315,7 @@
       linea(x,nonioY,x,nonioY+(esCoincidencia?30:17),esCoincidencia?2.6:1.1,esCoincidencia?'#c2410c':'#263238');
       if(i%5===0||i===divisionesNonio-1) texto(String(i),x,nonioY+44,11,'center',esCoincidencia?'#c2410c':'#263238');
     }
-    if(mostrarCoincidencia.checked) texto(`Coincidencia n = ${coincidencia}`,nonioX+(divisionesNonio-1)*nonioGap+100,nonioY+18,13,'left','#c2410c');
+    if(mostrarCoincidencia.checked) texto(`Coincidencia n = ${coincidencia}`,canvas.width-40,nonioY+68,13,'right','#c2410c');
     const lecturaManguito=marcaManguito*0.5;
     const lecturaTambor=indiceTambor*paso/divisionesTambor;
     const lecturaNonio=coincidencia*precisionMm();
