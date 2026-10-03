@@ -55,7 +55,7 @@
     const ax = origin.x + state.r * lengthScale, ay = origin.y;
     const rad = state.a * Math.PI/180, ux = Math.cos(rad), uy = -Math.sin(rad);
     const tx = ax + c.fx*forceScale, ty = ay - c.fy*forceScale;
-    let drawing = `<defs>${[['force','#2563eb'],['position','#237548'],['moment','#314986']].map(([id,color])=>`<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="${color}"/></marker>`).join('')}</defs>`;
+    let drawing = `<defs>${[['force','#2563eb'],['componentX','#9333ea'],['componentY','#dc2626'],['position','#237548'],['moment','#314986']].map(([id,color])=>`<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="${color}"/></marker>`).join('')}</defs>`;
     drawing += line(40,ay,650,ay,'#d5ddeb') + label(645,ay+22,'+X') + line(origin.x,45,origin.x,515,'#d5ddeb') + label(origin.x+10,55,'+Y');
     drawing += `<rect x="${origin.x}" y="${ay-8}" width="${barLength*lengthScale}" height="16" rx="8" fill="#dce4f1" stroke="#aab7cd"/>`;
     for (let i=0;i<=barLength+1e-9;i+=tickStep) drawing += line(origin.x+i*lengthScale,ay+9,origin.x+i*lengthScale,ay+17,'#aab7cd') + label(origin.x+i*lengthScale-10,ay+36,`${fmt(i)} m`);
@@ -67,8 +67,13 @@
       drawing += line(origin.x,ay,hx,hy,'#c2410c','stroke-dasharray="5 4"') + label((origin.x+hx)/2-20,(ay+hy)/2-12,`d = ${fmt(c.d)} m`,'#c2410c');
       const vx=-uy, vy=ux, side=projection<0?1:-1;
       drawing += `<path d="M${hx+side*ux*10},${hy+side*uy*10} l${vx*10},${vy*10} l${-side*ux*10},${-side*uy*10}" fill="none" stroke="#c2410c"/>`;
-      drawing += line(ax,ay,tx,ay,'#2563eb','stroke-dasharray="4 4"') + line(tx,ay,tx,ty,'#2563eb','stroke-dasharray="4 4"');
-      drawing += label(tx+8,(ay+ty)/2,`Fy = ${fmt(c.fy)} N`,'#2563eb');
+      // Both components start at the point where the force is applied.
+      drawing += line(tx,ay,tx,ty,'#2563eb','stroke-dasharray="4 4" opacity=".4"')
+        + line(ax,ty,tx,ty,'#2563eb','stroke-dasharray="4 4" opacity=".4"');
+      if (Math.abs(c.fx) > 1e-9) drawing += arrow(ax,ay,tx,ay,'#9333ea','componentX');
+      if (Math.abs(c.fy) > 1e-9) drawing += arrow(ax,ay,ax,ty,'#dc2626','componentY');
+      drawing += label((ax+tx)/2,ay-14,`${vector('F')}x = ${fmt(c.fx)} N`,'#9333ea');
+      drawing += label(ax+12,(ay+ty)/2+(c.fy<0?16:-6),`${vector('F')}y = ${fmt(c.fy)} N`,'#dc2626');
     }
     if (state.r>0) drawing += arrow(origin.x,ay+65,ax,ay+65,'#237548','position') + label((origin.x+ax)/2-20,ay+88,`r = ${fmt(state.r)} m`,'#237548');
     if (state.a>0 && state.a<360) drawing += `<path d="M${ax+32},${ay} A32 32 0 ${state.a>180?1:0} 0 ${ax+32*ux},${ay+32*uy}" fill="none" stroke="#2563eb"/>`;
