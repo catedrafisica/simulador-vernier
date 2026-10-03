@@ -60,6 +60,8 @@ input[type=checkbox] { accent-color:var(--azul); }
 
 .zoom-controles { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
 .zoom-controles output { min-width:60px; text-align:center; font-variant-numeric:tabular-nums; }
+.tabla th:nth-child(2), .tabla th:nth-child(3),
+.tabla td:nth-child(2), .tabla td:nth-child(3) { text-align:center; }
 .zoom-controles button:disabled { opacity:.45; cursor:default; }
 #plano { aspect-ratio:5 / 4; }
 
