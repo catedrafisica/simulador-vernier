@@ -50,8 +50,8 @@
     $('longitudBarra').textContent = `Barra de ${fmt(barLength)} m`;
     const zero = Math.abs(c.moment) < 1e-9;
     const sense = zero ? 'Sin tendencia al giro' : c.moment > 0 ? `Antihorario (+${versor}, sale del plano)` : `Horario (−${versor}, entra al plano)`;
-    $('resumen').innerHTML = `<div class="dato"><span>Momento vectorial ${vector('τ')} respecto de O</span><strong>${fmt(c.moment)} ${versor} N·m</strong></div><div class="dato"><span>Brazo perpendicular d</span><strong>${fmt(c.d)} m</strong></div><div class="dato"><span>Sentido de giro</span><strong>${sense}</strong></div>`;
-    $('procedimiento').innerHTML = `<p><strong>${vector('τ')}<sub>O</sub> = ${vector('r')} × ${vector('F')} = (r F sen θ) ${versor} = (r F<sub>y</sub>) ${versor}</strong></p><p>F<sub>x</sub> = ${fmt(state.f)} cos(${fmt(state.a)}°) = ${fmt(c.fx)} N; F<sub>y</sub> = ${fmt(state.f)} sen(${fmt(state.a)}°) = ${fmt(c.fy)} N.</p><p>${vector('τ')}<sub>O</sub> = [${fmt(state.r)} × ${fmt(state.f)} × sen(${fmt(state.a)}°)] ${versor} = <strong>${fmt(c.moment)} ${versor} N·m</strong>.</p><p>d = r |sen θ| = ${fmt(c.d)} m; |τ<sub>O</sub>| = F d.</p><p>La componente paralela a la barra no produce momento. Para valores fijos de r y F, el módulo del momento es máximo a 90° y 270° y nulo a 0°, 180° y 360°.</p>`;
+    $('resumen').innerHTML = `<div class="dato"><span>Momento vectorial ${vector('τ')} respecto de O</span><strong>${fmt(c.moment)} ${versor} N·m</strong></div><div class="dato"><span>Brazo perpendicular b</span><strong>${fmt(c.d)} m</strong></div><div class="dato"><span>Sentido de giro</span><strong>${sense}</strong></div>`;
+    $('procedimiento').innerHTML = `<p><strong>${vector('τ')}<sub>O</sub> = ${vector('r')} × ${vector('F')} = (r F sen θ) ${versor} = (r F<sub>y</sub>) ${versor}</strong></p><p>F<sub>x</sub> = ${fmt(state.f)} cos(${fmt(state.a)}°) = ${fmt(c.fx)} N; F<sub>y</sub> = ${fmt(state.f)} sen(${fmt(state.a)}°) = ${fmt(c.fy)} N.</p><p>${vector('τ')}<sub>O</sub> = [${fmt(state.r)} × ${fmt(state.f)} × sen(${fmt(state.a)}°)] ${versor} = <strong>${fmt(c.moment)} ${versor} N·m</strong>.</p><p>b = r |sen θ| = ${fmt(c.d)} m; |τ<sub>O</sub>| = F b.</p><p>La componente paralela a la barra no produce momento. Para valores fijos de r y F, el módulo del momento es máximo a 90° y 270° y nulo a 0°, 180° y 360°.</p>`;
     const ax = origin.x + state.r * lengthScale, ay = origin.y;
     const rad = state.a * Math.PI/180, ux = Math.cos(rad), uy = -Math.sin(rad);
     const tx = ax + c.fx*forceScale, ty = ay - c.fy*forceScale;
@@ -64,7 +64,8 @@
       const projection = (origin.x-ax)*ux;
       const hx = ax+projection*ux, hy = ay+projection*uy;
       drawing += line(ax-ux*700,ay-uy*700,ax+ux*700,ay+uy*700,'#2563eb','stroke-dasharray="7 6" opacity=".35"');
-      drawing += line(origin.x,ay,hx,hy,'#c2410c','stroke-dasharray="5 4"') + label((origin.x+hx)/2-20,(ay+hy)/2-12,`d = ${fmt(c.d)} m`,'#c2410c');
+      drawing += line(origin.x,ay,hx,hy,'#c2410c','stroke-dasharray="5 4"')
+        + label((origin.x+hx)/2-20,(ay+hy)/2-12,`b = ${fmt(c.d)} m`,'#c2410c');
       const vx=-uy, vy=ux, side=projection<0?1:-1;
       drawing += `<path d="M${hx+side*ux*10},${hy+side*uy*10} l${vx*10},${vy*10} l${-side*ux*10},${-side*uy*10}" fill="none" stroke="#c2410c"/>`;
       // Both components start at the point where the force is applied.
@@ -75,7 +76,7 @@
       drawing += label((ax+tx)/2,ay-14,`${vector('F')}x = ${fmt(c.fx)} N`,'#9333ea');
       drawing += label(ax+12,(ay+ty)/2+(c.fy<0?16:-6),`${vector('F')}y = ${fmt(c.fy)} N`,'#dc2626');
     }
-    if (state.r>0) drawing += arrow(origin.x,ay+65,ax,ay+65,'#237548','position') + label((origin.x+ax)/2-20,ay+88,`r = ${fmt(state.r)} m`,'#237548');
+    if (state.r>0) drawing += arrow(origin.x,ay,ax,ay,'#237548','position') + label((origin.x+ax)/2-20,ay-18,`${vector('r')} = ${fmt(state.r)} m`,'#237548');
     if (state.a>0 && state.a<360) drawing += `<path d="M${ax+32},${ay} A32 32 0 ${state.a>180?1:0} 0 ${ax+32*ux},${ay+32*uy}" fill="none" stroke="#2563eb"/>`;
     drawing += label(ax+40,ay+52,`θ = ${fmt(state.a)}°`,'#2563eb');
     if(state.f>0) drawing += arrow(ax,ay,tx,ty,'#2563eb','force');
