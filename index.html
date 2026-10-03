@@ -166,7 +166,7 @@
       align-items: flex-start;
       padding: 24px;
       border: 1px solid var(--linea);
-      border-top: 4px solid var(--azul);
+      border-top: 4px solid var(--bs-primary);
       border-radius: 8px;
       background: #fff;
       color: inherit;
@@ -174,8 +174,20 @@
       transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
     }
 
-    .opcion:last-child {
-      border-top-color: var(--verde);
+    .opcion:nth-child(5n + 2) {
+      border-top-color: var(--bs-success);
+    }
+
+    .opcion:nth-child(5n + 3) {
+      border-top-color: var(--bs-warning);
+    }
+
+    .opcion:nth-child(5n + 4) {
+      border-top-color: var(--bs-danger);
+    }
+
+    .opcion:nth-child(5n + 5) {
+      border-top-color: var(--bs-info);
     }
 
     .opcion:hover {
