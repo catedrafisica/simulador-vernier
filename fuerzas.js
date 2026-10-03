@@ -57,7 +57,7 @@ function render(){
  html+=arrow(0,0,r.x,r.y,'#237548','R');if(r.m<1e-8)html+='<circle cx="350" cy="280" r="5" fill="#237548"/>';
  html+=fuerzas.map(dibujarAngulo).join('');
  svg.innerHTML='<title id="tituloPlano">Suma vectorial de fuerzas</title><desc id="descripcionPlano">'+`Resultante ${fmt(r.m)} N. Componentes X ${fmt(r.x)} N e Y ${fmt(r.y)} N. `+fuerzas.map(f=>`${f.nombre}: ${f.m>0?`ángulo ${fmt(f.a)}° desde +X en sentido antihorario`:'ángulo indefinido por módulo cero'}.`).join(' ')+'</desc>'+html;
- $('escala').textContent=`Escala: ${fmt(step)}N / mín. div.`;
+ $('escala').innerHTML=`Escala: <strong>${fmt(step)}N</strong> / mín. div.`;
  $('resumen').innerHTML=`<div class="dato"><span>Módulo de la resultante</span><strong>${fmt(r.m)} N</strong></div><div class="dato"><span>Dirección desde +X</span><strong>${r.a===null?'Indefinida':fmt(r.a)+'°'}</strong></div><div class="dato"><span>Estado del sistema</span><strong>${r.m<1e-8?'Equilibrio':'Fuerza neta ≠ 0'}</strong></div>`;
  $('tabla').innerHTML=r.c.map((c,i)=>{
   const f=fuerzas[i],n=i+1;
