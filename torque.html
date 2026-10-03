@@ -121,6 +121,13 @@
 </section>
 <section class="panel grafico" aria-label="Representación del momento">
 <div class="cabecera"><h2>Fuerza sobre una barra</h2><span>Barra de 2 m</span></div>
+<div class="zoom-controles" role="group" aria-label="Zoom del gráfico">
+<span>Zoom</span>
+<button type="button" id="zoomAlejar" aria-label="Alejar gráfico" aria-controls="plano">−</button>
+<output id="zoomNivel" aria-live="polite">100 %</output>
+<button type="button" id="zoomAcercar" aria-label="Acercar gráfico" aria-controls="plano">+</button>
+<button type="button" id="zoomRestablecer" aria-controls="plano">Restablecer zoom</button>
+</div>
 <svg id="plano" viewBox="0 0 700 560" role="img" aria-labelledby="tituloPlano descripcionPlano"><title id="tituloPlano">Momento de una fuerza respecto de O</title><desc id="descripcionPlano"></desc></svg>
 <div class="leyenda"><span class="f1">● Fuerza F</span><span class="f2">● Brazo perpendicular d</span><span class="r">● Vector posición r</span></div>
 <p class="ayuda">Arrastra el punto de aplicación sobre la barra o la punta de la fuerza para cambiar su módulo y ángulo. Las longitudes y las fuerzas usan escalas distintas.</p>

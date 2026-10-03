@@ -19,6 +19,19 @@
   };
   $('controles').innerHTML = fields.map(({key,label,min,max,step}) => `<fieldset class="fuerza" style="--color:#2563eb"><legend>${label}</legend><label class="campo" for="${key}">Valor<input id="${key}" type="number" min="${min}" max="${max}" step="${step}" value="${state[key]}"></label><input id="${key}Range" type="range" aria-label="${label}" min="${min}" max="${max}" step="${step}" value="${state[key]}"></fieldset>`).join('');
   const svg = $('plano');
+  let zoom = 1;
+  function actualizarZoom(valor) {
+    zoom = Math.max(.5, Math.min(3, Math.round(valor * 100) / 100));
+    const ancho = 700 / zoom, alto = 560 / zoom;
+    svg.setAttribute('viewBox', `${350 - ancho / 2} ${280 - alto / 2} ${ancho} ${alto}`);
+    $('zoomNivel').textContent = `${Math.round(zoom * 100)} %`;
+    $('zoomAlejar').disabled = zoom <= .5;
+    $('zoomAcercar').disabled = zoom >= 3;
+  }
+  $('zoomAlejar').addEventListener('click', () => actualizarZoom(zoom - .25));
+  $('zoomAcercar').addEventListener('click', () => actualizarZoom(zoom + .25));
+  $('zoomRestablecer').addEventListener('click', () => actualizarZoom(1));
+  actualizarZoom(1);
   const origin = { x: 170, y: 280 }, lengthScale = 190, forceScale = 3.2;
   const line = (x1,y1,x2,y2,color,extra='') => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="2" ${extra}/>`;
   const svgNotation = text => text.replace(/<span class="simbolo-(vector|versor)">(.*?)<\/span>/g, (_, kind, letter) =>
