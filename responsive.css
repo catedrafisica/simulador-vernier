@@ -1,4 +1,6 @@
 /* Shared navigation and mobile layout for all three pages. */
+.pantalla-carga > span:not(.spinner) { color: #81c784; }
+
 .barra-sitio .container { gap: 12px; }
 .barra-sitio .navbar-brand {
   min-width: 0;
