@@ -20,17 +20,19 @@
   $('controles').innerHTML = fields.map(({key,label,min,max,step}) => `<fieldset class="fuerza" style="--color:#2563eb"><legend>${label}</legend><label class="campo" for="${key}">Valor<input id="${key}" type="number" min="${min}" max="${max}" step="${step}" value="${state[key]}"></label><input id="${key}Range" type="range" aria-label="${label}" min="${min}" max="${max}" step="${step}" value="${state[key]}"></fieldset>`).join('');
   const svg = $('plano');
   let zoom = 1;
+  let pan = { x: 0, y: 0 };
   function actualizarZoom(valor) {
     zoom = Math.max(.5, Math.min(3, Math.round(valor * 100) / 100));
     const ancho = 700 / zoom, alto = 560 / zoom;
-    svg.setAttribute('viewBox', `${350 - ancho / 2} ${280 - alto / 2} ${ancho} ${alto}`);
+    svg.setAttribute('viewBox', `${350 - ancho / 2 + pan.x} ${280 - alto / 2 + pan.y} ${ancho} ${alto}`);
     $('zoomNivel').textContent = `${Math.round(zoom * 100)} %`;
     $('zoomAlejar').disabled = zoom <= .5;
     $('zoomAcercar').disabled = zoom >= 3;
   }
   $('zoomAlejar').addEventListener('click', () => actualizarZoom(zoom - .25));
   $('zoomAcercar').addEventListener('click', () => actualizarZoom(zoom + .25));
-  $('zoomRestablecer').addEventListener('click', () => actualizarZoom(1));
+  function restablecerZoom() { pan = { x: 0, y: 0 }; actualizarZoom(1); }
+  $('zoomRestablecer').addEventListener('click', restablecerZoom);
   actualizarZoom(1);
   const origin = { x: 170, y: 280 }, lengthScale = 190, forceScale = 3.2;
   const line = (x1,y1,x2,y2,color,extra='') => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="2" ${extra}/>`;
@@ -49,7 +51,7 @@
     const rad = state.a * Math.PI/180, ux = Math.cos(rad), uy = -Math.sin(rad);
     const tx = ax + c.fx*forceScale, ty = ay - c.fy*forceScale;
     let drawing = `<defs>${[['force','#2563eb'],['position','#237548'],['moment','#314986']].map(([id,color])=>`<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="${color}"/></marker>`).join('')}</defs>`;
-    drawing += line(40,ay,650,ay,'#d5ddeb') + label(645,ay+22,'+X');
+    drawing += line(40,ay,650,ay,'#d5ddeb') + label(645,ay+22,'+X') + line(origin.x,45,origin.x,515,'#d5ddeb') + label(origin.x+10,55,'+Y');
     drawing += `<rect x="${origin.x}" y="${ay-8}" width="${2*lengthScale}" height="16" rx="8" fill="#dce4f1" stroke="#aab7cd"/>`;
     for (let i=0;i<=2;i+=0.5) drawing += line(origin.x+i*lengthScale,ay+9,origin.x+i*lengthScale,ay+17,'#aab7cd') + label(origin.x+i*lengthScale-10,ay+36,`${fmt(i)} m`);
     if ($('auxiliares').checked) {
@@ -87,16 +89,30 @@
     $(id).addEventListener('change',render);
   }));
   $('auxiliares').addEventListener('change',render);
-  $('restablecer').addEventListener('click',()=>{Object.assign(state,initial); $('auxiliares').checked=true; render();});
+  $('restablecer').addEventListener('click',()=>{Object.assign(state,initial); $('auxiliares').checked=true; restablecerZoom(); render();});
   const examples={maximo:{f:20,r:1,a:90},oblicuo:{f:20,r:1.5,a:30},nulo:{f:20,r:1,a:0},horario:{f:20,r:1,a:270}};
   document.querySelectorAll('[data-ejemplo]').forEach(button=>button.addEventListener('click',()=>{Object.assign(state,examples[button.dataset.ejemplo]);render();}));
   let drag=null;
-  svg.addEventListener('pointerdown',event=>{const target=event.target.closest('[data-drag]'); if(!target)return; drag=target.dataset.drag; svg.setPointerCapture(event.pointerId); event.preventDefault();});
+  svg.addEventListener('pointerdown',event=>{
+    const target=event.target.closest('[data-drag]');
+    if(target) drag={type:'handle',kind:target.dataset.drag};
+    else {
+      const viewBox=svg.viewBox.baseVal,rect=svg.getBoundingClientRect();
+      drag={type:'pan',x:event.clientX,y:event.clientY,viewX:viewBox.x,viewY:viewBox.y,width:viewBox.width,height:viewBox.height,rectWidth:rect.width,rectHeight:rect.height};
+    }
+    svg.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
   svg.addEventListener('pointermove',event=>{
     if(!drag)return;
+    if(drag.type==='pan'){
+      pan={x:drag.viewX-(event.clientX-drag.x)*drag.width/drag.rectWidth-(350-drag.width/2),y:drag.viewY-(event.clientY-drag.y)*drag.height/drag.rectHeight-(280-drag.height/2)};
+      actualizarZoom(zoom);
+      return;
+    }
     const matrix=svg.getScreenCTM(); if(!matrix)return;
     const point=new DOMPoint(event.clientX,event.clientY).matrixTransform(matrix.inverse());
-    if(drag==='r') state.r=Math.round(Math.min(2,Math.max(0,(point.x-origin.x)/lengthScale))*100)/100;
+    if(drag.kind==='r') state.r=Math.round(Math.min(2,Math.max(0,(point.x-origin.x)/lengthScale))*100)/100;
     else {const dx=point.x-origin.x-state.r*lengthScale,dy=origin.y-point.y;state.f=Math.round(Math.min(50,Math.hypot(dx,dy)/forceScale)*10)/10;state.a=Math.round((Math.atan2(dy,dx)*180/Math.PI+360)%360);}
     render();
   });

@@ -63,7 +63,8 @@ input[type=checkbox] { accent-color:var(--azul); }
 .tabla th:nth-child(2), .tabla th:nth-child(3),
 .tabla td:nth-child(2), .tabla td:nth-child(3) { text-align:center; }
 .zoom-controles button:disabled { opacity:.45; cursor:default; }
-#plano { aspect-ratio:5 / 4; }
+#plano { aspect-ratio:5 / 4; touch-action:none; cursor:grab; }
+#plano:active { cursor:grabbing; }
 
 /* Ángulos de cada fuerza: el borde blanco mantiene legibles las etiquetas. */
 #plano .etiqueta-angulo {

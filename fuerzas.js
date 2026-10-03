@@ -10,17 +10,19 @@ fuerzas.forEach((f,i)=>['m','a'].forEach(k=>[k+i,k+'r'+i].forEach(id=>$(id).addE
 let transform,drag=null;
 const svg=$('plano');
 let zoom=1;
+let pan={x:0,y:0};
 function actualizarZoom(valor){
  zoom=Math.max(.5,Math.min(3,Math.round(valor*100)/100));
  const ancho=700/zoom,alto=560/zoom;
- svg.setAttribute('viewBox',`${350-ancho/2} ${280-alto/2} ${ancho} ${alto}`);
+ svg.setAttribute('viewBox',`${350-ancho/2+pan.x} ${280-alto/2+pan.y} ${ancho} ${alto}`);
  $('zoomNivel').textContent=`${Math.round(zoom*100)} %`;
  $('zoomAlejar').disabled=zoom<=.5;
  $('zoomAcercar').disabled=zoom>=3;
 }
 $('zoomAlejar').addEventListener('click',()=>actualizarZoom(zoom-.25));
 $('zoomAcercar').addEventListener('click',()=>actualizarZoom(zoom+.25));
-$('zoomRestablecer').addEventListener('click',()=>actualizarZoom(1));
+function restablecerZoom(){pan={x:0,y:0};actualizarZoom(1);}
+$('zoomRestablecer').addEventListener('click',restablecerZoom);
 function dibujarAngulo(f,i){
  const radio=38+i*32;
  const punto=(r,a)=>[350+r*Math.cos(a*Math.PI/180),280-r*Math.sin(a*Math.PI/180)];
@@ -70,8 +72,25 @@ function render(){
 $('metodo').addEventListener('change',render);$('componentes').addEventListener('change',render);
 function ejemplo(tipo){const valores={rectangulo:[[4,0],[3,90]],oblicuas:[[6,25],[4,120]],equilibrio:[[5,30],[5,210]]}[tipo];valores.forEach(([m,a],i)=>Object.assign(fuerzas[i],{m,a}));sync();render();}
 document.querySelectorAll('[data-ejemplo]').forEach(b=>b.addEventListener('click',()=>ejemplo(b.dataset.ejemplo)));
-$('restablecer').addEventListener('click',()=>{actualizarZoom(1);$('metodo').value='paralelogramo';$('componentes').checked=true;ejemplo('rectangulo');});
-svg.addEventListener('pointerdown',e=>{const target=e.target.closest('[data-fuerza]');if(!target)return;drag={i:Number(target.dataset.fuerza),...transform};svg.setPointerCapture(e.pointerId);});
-svg.addEventListener('pointermove',e=>{if(!drag)return;const pt=new DOMPoint(e.clientX,e.clientY).matrixTransform(svg.getScreenCTM().inverse());const x=(pt.x-drag.ox)/drag.s,y=(drag.oy-pt.y)/drag.s;Object.assign(fuerzas[drag.i],{m:Math.min(100,Math.round(Math.hypot(x,y)*10)/10),a:Math.round(((Math.atan2(y,x)*180/Math.PI+360)%360)*10)/10});sync();render();});
+$('restablecer').addEventListener('click',()=>{restablecerZoom();$('metodo').value='paralelogramo';$('componentes').checked=true;ejemplo('rectangulo');});
+svg.addEventListener('pointerdown',e=>{
+ const target=e.target.closest('[data-fuerza]');
+ if(target)drag={tipo:'fuerza',i:Number(target.dataset.fuerza),...transform};
+ else{
+  const viewBox=svg.viewBox.baseVal,rect=svg.getBoundingClientRect();
+  drag={tipo:'pan',x:e.clientX,y:e.clientY,viewX:viewBox.x,viewY:viewBox.y,width:viewBox.width,height:viewBox.height,rectWidth:rect.width,rectHeight:rect.height};
+  e.preventDefault();
+ }
+ svg.setPointerCapture(e.pointerId);
+});
+svg.addEventListener('pointermove',e=>{
+ if(!drag)return;
+ if(drag.tipo==='pan'){
+  pan={x:drag.viewX-(e.clientX-drag.x)*drag.width/drag.rectWidth-(350-drag.width/2),y:drag.viewY-(e.clientY-drag.y)*drag.height/drag.rectHeight-(280-drag.height/2)};
+  actualizarZoom(zoom);
+  return;
+ }
+ const pt=new DOMPoint(e.clientX,e.clientY).matrixTransform(svg.getScreenCTM().inverse());const x=(pt.x-drag.ox)/drag.s,y=(drag.oy-pt.y)/drag.s;Object.assign(fuerzas[drag.i],{m:Math.min(100,Math.round(Math.hypot(x,y)*10)/10),a:Math.round(((Math.atan2(y,x)*180/Math.PI+360)%360)*10)/10});sync();render();
+});
 ['pointerup','pointercancel','lostpointercapture'].forEach(type=>svg.addEventListener(type,()=>{drag=null;}));
 render();
