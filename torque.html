@@ -2,12 +2,18 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fuerzas en el plano XY | Física Aplicada</title>
+<title>Torque o momento de una fuerza | Física Aplicada</title>
 <link rel="icon" href="icoQubit.svg" type="image/svg+xml">
-<meta name="description" content="Compone y descompone fuerzas concurrentes en el plano XY con un simulador interactivo de Física Aplicada.">
+<meta name="description" content="Explora el torque, el brazo de palanca y el sentido del momento de una fuerza.">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="fuerzas.css">
 <link rel="stylesheet" href="responsive.css">
+<style>
+.simbolo-vector, .simbolo-versor { position:relative; display:inline-block; padding-top:0.3em; line-height:1; }
+.simbolo-vector::before, .simbolo-versor::before { position:absolute; top:-0.2em; left:50%; transform:translateX(-50%); font-size:0.8em; line-height:1; }
+.simbolo-vector::before { content:"→"; }
+.simbolo-versor::before { content:"^"; }
+</style>
 </head>
 <body>
 <canvas id="particulas" aria-hidden="true"></canvas>
@@ -32,8 +38,8 @@
           <li><a class="dropdown-item" href="probeta.html">Probeta graduada</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><h6 class="dropdown-header">UNIDAD 2 - ESTÁTICA</h6></li>
-          <li><span class="dropdown-item active" aria-current="page">Fuerzas en el plano XY</span></li>
-          <li><a class="dropdown-item" href="torque.html">Torque o momento de una fuerza</a></li>
+          <li><a class="dropdown-item" href="fuerzas.html">Fuerzas en el plano XY</a></li>
+          <li><span class="dropdown-item active" aria-current="page">Torque o momento de una fuerza</span></li>
           <li><hr class="dropdown-divider"></li>
           <li><h6 class="dropdown-header">UNIDAD 3 - CINEMÁTICA</h6></li>
           <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
@@ -100,37 +106,30 @@
 <div class="pantalla-carga" id="pantallaCarga" role="status" aria-live="polite">
   <img class="gif-qubit" src="qubit.gif" alt="Qubit">
   <span class="spinner" aria-hidden="true"></span>
-  <span>Cargando simulador de fuerzas...</span>
+  <span>Cargando simulador de torque...</span>
 </div>
 <main inert>
-<header class="encabezado"><img class="instrumento-icono" src="logoQubit.svg" alt=""><h1>Simulador de Fuerzas en el plano XY - Física Aplicada</h1></header>
-<p>Explora la composición y descomposición de dos fuerzas concurrentes.</p>
+<header class="encabezado"><img class="instrumento-icono" src="logoQubit.svg" alt=""><h1>Torque o momento de una fuerza</h1></header>
+<p>Explora cómo la fuerza, su punto de aplicación y su dirección producen una tendencia al giro alrededor de O.</p>
 <div class="layout">
-<section class="panel controles" aria-label="Configuración de fuerzas">
-<h2>Configura las fuerzas</h2><p>Los ángulos se miden desde +X, en sentido antihorario. Las fuerzas se expresan en newtons (N).</p>
+<section class="panel controles" aria-label="Configuración del momento">
+<h2>Configura la fuerza</h2>
+<p>La barra parte del eje O hacia +X. El ángulo θ se mide desde +X en sentido antihorario.</p>
 <div id="controles"></div>
-<label class="vista">Método de representación<select id="metodo"><option value="paralelogramo">Composición · paralelogramo</option><option value="componentes">Descomposición · componentes XY</option><option value="triangulo">Composición · punta a cola</option></select></label>
-<label class="check"><input type="checkbox" id="componentes"> Mostrar componentes de la resultante</label>
-<button id="restablecer" class="reiniciar">Restablecer</button>
+<label class="check"><input type="checkbox" id="auxiliares" checked> Mostrar brazo y componentes</label>
+<button type="button" id="restablecer" class="reiniciar">Restablecer</button>
 </section>
-<section class="panel grafico" aria-label="Representación gráfica">
-<div class="cabecera"><h2>Plano cartesiano</h2><span id="escala"></span></div>
-<svg id="plano" viewBox="0 0 700 560" role="img" aria-labelledby="tituloPlano descripcionPlano"><title id="tituloPlano">Suma vectorial de fuerzas</title><desc id="descripcionPlano">Fuerzas y resultante sobre los ejes X e Y.</desc></svg>
-
-<div class="leyenda"><span class="f1">● F₁</span><span class="f2">● F₂</span><span class="r">● Resultante R</span><span>┄ Líneas auxiliares</span></div>
-<p class="ayuda">Modifica los valores o arrastra la punta de F₁ o F₂. La escala se adapta a las fuerzas.</p>
-<div class="zoom-controles" role="group" aria-label="Zoom del gráfico">
-<span>Zoom</span>
-<button type="button" id="zoomAlejar" aria-label="Alejar gráfico" aria-controls="plano">−</button>
-<output id="zoomNivel" aria-live="polite">100 %</output>
-<button type="button" id="zoomAcercar" aria-label="Acercar gráfico" aria-controls="plano">+</button>
-<button type="button" id="zoomRestablecer" aria-controls="plano">Restablecer zoom</button>
-</div>
+<section class="panel grafico" aria-label="Representación del momento">
+<div class="cabecera"><h2>Fuerza sobre una barra</h2><span>Barra de 2 m</span></div>
+<svg id="plano" viewBox="0 0 700 560" role="img" aria-labelledby="tituloPlano descripcionPlano"><title id="tituloPlano">Momento de una fuerza respecto de O</title><desc id="descripcionPlano"></desc></svg>
+<div class="leyenda"><span class="f1">● Fuerza F</span><span class="f2">● Brazo perpendicular d</span><span class="r">● Vector posición r</span></div>
+<p class="ayuda">Arrastra el punto de aplicación sobre la barra o la punta de la fuerza para cambiar su módulo y ángulo. Las longitudes y las fuerzas usan escalas distintas.</p>
 <h3>Ejemplos para explorar</h3>
-<div class="ejemplos"><button data-ejemplo="rectangulo">Perpendiculares (F₁=4N;F₂=3N)</button><button data-ejemplo="oblicuas">Fuerzas oblicuas</button><button data-ejemplo="equilibrio">Equilibrio</button></div>
+<div class="ejemplos"><button type="button" data-ejemplo="maximo">Momento máximo</button><button type="button" data-ejemplo="oblicuo">Fuerza oblicua</button><button type="button" data-ejemplo="nulo">Momento nulo</button><button type="button" data-ejemplo="horario">Giro horario</button></div>
 </section>
 </div>
-<section class="panel resultados" aria-label="Resultados del cálculo"><h2>Resultado y procedimiento</h2><div id="resumen" class="resumen" aria-live="polite"></div><div class="tabla"><table><caption>Descomposición y suma de componentes</caption><thead><tr><th>Vector</th><th>Componente X (N)</th><th>Componente Y (N)</th></tr></thead><tbody id="tabla"></tbody></table></div><div id="procedimiento"></div></section>
+<section class="panel resultados" aria-label="Resultados del cálculo"><h2>Resultado y procedimiento</h2><div id="resumen" class="resumen" aria-live="polite"></div><div id="procedimiento" class="formula"></div>
+<p class="nota">Convención: momento positivo = antihorario (+k̂, eje +Z, sale del plano); negativo = horario (−k̂, eje −Z, entra al plano). El versor k̂ es perpendicular al plano XY. El dibujo indica la tendencia al giro; no representa una animación dinámica. Un momento nulo de esta fuerza no garantiza por sí solo el equilibrio del cuerpo.</p></section>
 </main>
 <footer>
   <hr class="separador-version">
@@ -138,7 +137,7 @@
   <p>© Copyright <strong>2026 Qubit Física</strong>. Todos los derechos reservados.</p>
   <p>Diseñado por <a href="https://github.com/qubitfisica">augusalterats</a> | <a href="https://qubitfisica.com.ar/LICENSE.md">Licencia MIT</a></p>
 </footer>
-<script src="fuerzas.js"></script>
+<script src="torque.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="particulas.js"></script>
 <script src="version.js"></script>
